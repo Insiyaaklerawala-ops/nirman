@@ -124,9 +124,29 @@ elif menu == "Report Leak":
 # ---------------------------
 # 📊 VIEW LEAKS UI
 # ---------------------------
-elif menu == "View Leaks":
-    st.header("📊 Reported Leaks")
+elif menu == "Live Map & Alerts":
+    st.header("🗺️ Live Monitoring Dashboard")
 
+    leaks = load_leaks()
+
+    st.subheader("📍 Leak Locations")
+    show_map(leaks)
+
+    st.subheader("🚨 Alerts")
+    if st.button("Generate Alert"):
+        st.warning(generate_alert())
+
+    st.subheader("📊 Analytics")
+
+    total, water_loss, repair_time, cost = calculate_metrics(leaks)
+
+    col1, col2 = st.columns(2)
+
+    col1.metric("Total Leaks", total)
+    col1.metric("Water Loss (Liters)", water_loss)
+
+    col2.metric("Avg Repair Time (hrs)", repair_time)
+    col2.metric("Estimated Cost (₹)", cost)
     leaks = load_leaks()
 
     if not leaks:
@@ -184,8 +204,11 @@ elif menu == "Repair Logbook":
 # ---------------------------
 # 🗺️ LIVE MAP & ALERTS
 # ---------------------------
+# ---------------------------
+# 🗺️ LIVE MAP & ALERTS
+# ---------------------------
 elif menu == "Live Map & Alerts":
-st.header("🗺️ Live Monitoring Dashboard")
+    st.header("🗺️ Live Monitoring Dashboard")
 
     leaks = load_leaks()
 
@@ -207,7 +230,6 @@ st.header("🗺️ Live Monitoring Dashboard")
 
     col2.metric("Avg Repair Time (hrs)", repair_time)
     col2.metric("Estimated Cost (₹)", cost)
-
 # ---------------------------
 # 📢 FOOTER
 # ---------------------------
