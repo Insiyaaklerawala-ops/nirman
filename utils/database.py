@@ -24,13 +24,15 @@ def save_data(file, data):
 # ---------------------------
 # 🚨 SAVE LEAK REPORT
 # ---------------------------
-def save_leak(location, image):
+def save_leak(location, image, lat=None, lon=None):
     leaks = load_data(LEAK_FILE)
 
     new_leak = {
         "id": len(leaks) + 1,
         "location": location,
         "image": image,
+        "lat": lat,
+        "lon": lon,
         "status": "Pending",
         "time_reported": str(datetime.datetime.now())
     }

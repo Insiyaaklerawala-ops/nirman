@@ -61,8 +61,15 @@ def verify_image(path):
     result["confidence"] = random.randint(70, 95)
     result["message"] = "Image looks genuine"
     result["is_valid"] = True
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
 
-    return result
+    if laplacian_var < 50:
+       result["message"] = "Blurry image"
+       result["is_valid"] = False
+       return result
+
+
+
 if __name__ == "__main__":
     test_path = "test.jpg"   # put any image here
     result = verify_image(test_path)

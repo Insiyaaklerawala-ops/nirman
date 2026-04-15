@@ -22,16 +22,18 @@ def show_map(leaks):
 
 
 # ---------------------------
-# 🚨 ALERT SIMULATION
+# 🚨 SMART ALERT SYSTEM
 # ---------------------------
-def generate_alert():
-    alerts = [
-        "🚨 High leakage detected in Sector 12",
-        "⚠️ Pipeline pressure drop in Zone 5",
-        "🚨 Underground leak suspected near main road",
-        "⚠️ Sensor anomaly detected"
-    ]
-    return random.choice(alerts)
+def generate_alert(leaks):
+    if not leaks:
+        return "No active issues"
+
+    high_risk = [l for l in leaks if l.get("status") == "Pending"]
+
+    if len(high_risk) > 5:
+        return "🚨 Multiple leaks detected! Immediate action required"
+
+    return f"⚠️ {len(high_risk)} active leaks need attention"
 
 
 # ---------------------------
@@ -40,8 +42,11 @@ def generate_alert():
 def calculate_metrics(leaks):
     total = len(leaks)
 
-    water_loss = total * random.randint(100, 500)
-    repair_time = random.randint(2, 24)
-    cost = total * random.randint(500, 2000)
+    if total == 0:
+        return 0, 0, 0, 0
+
+    water_loss = sum([random.randint(100, 300) for _ in leaks])
+    repair_time = sum([random.randint(2, 10) for _ in leaks]) / total
+    cost = water_loss * 2
 
     return total, water_loss, repair_time, cost
