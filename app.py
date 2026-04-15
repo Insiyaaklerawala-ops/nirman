@@ -7,6 +7,7 @@ from utils.database import (
     load_repairs
 )
 from utils.ai_verifier import verify_image
+from utils.advanced_features import show_map, generate_alert, calculate_metrics
 
 # ---------------------------
 # 🔧 PAGE CONFIG
@@ -192,7 +193,7 @@ elif menu == "Repair Logbook":
 st.markdown("---")
 st.caption("Built for Smart City Water Management 🚰")
 elif menu == "Live Map & Alerts":
-    st.header("🗺️ Live Monitoring Dashboard")
+st.header("🗺️ Live Monitoring Dashboard")
 
     leaks = load_leaks()
 
