@@ -1,6 +1,11 @@
 import streamlit as st
 import os
-from utils.database import load_leaks
+ffrom utils.database import (
+    save_leak,
+    load_leaks,
+    save_repair,
+    load_repairs
+)
 from utils.ai_verifier import verify_image
 
 # ---------------------------
@@ -147,30 +152,39 @@ elif menu == "View Leaks":
 elif menu == "Repair Logbook":
     st.header("🛠️ Repair Logbook")
 
-    col1, col2 = st.columns(2)
+    leak_id = st.number_input("Leak ID", min_value=1)
 
-    with col1:
-        before = st.file_uploader("📷 Before Repair", key="before")
+    before = st.file_uploader("Upload BEFORE Repair Image", key="before")
+    after = st.file_uploader("Upload AFTER Repair Image", key="after")
 
-    with col2:
-        after = st.file_uploader("📷 After Repair", key="after")
-
-    time_taken = st.slider("⏱️ Repair Time (hours)", 1, 48)
-    cost = st.number_input("💰 Repair Cost (₹)", min_value=0)
+    cost = st.number_input("Repair Cost (₹)")
+    water_loss = st.number_input("Water Loss (litres)")
 
     if st.button("Submit Repair"):
-        if before and after:
-            st.success("✅ Repair logged successfully!")
 
-            st.markdown(f"""
-            <div class="card">
-                ⏱️ Time Taken: {time_taken} hrs <br>
-                💰 Cost: ₹{cost}
-            </div>
-            """, unsafe_allow_html=True)
+        if before and after:
+
+            before_path = f"assets/uploads/{before.name}"
+            after_path = f"assets/uploads/{after.name}"
+
+            with open(before_path, "wb") as f:
+                f.write(before.getbuffer())
+
+            with open(after_path, "wb") as f:
+                f.write(after.getbuffer())
+
+            save_repair(
+                leak_id,
+                before_path,
+                after_path,
+                cost,
+                water_loss
+            )
+
+            st.success("Repair logged successfully!")
 
         else:
-            st.warning("Upload both before and after images!")
+            st.warning("Please upload BOTH before and after images!")
 
 # ---------------------------
 # 📢 FOOTER
