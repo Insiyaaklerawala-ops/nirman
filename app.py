@@ -7,6 +7,7 @@ from utils.database import (
     load_repairs
 )
 from utils.ai_verifier import verify_image
+from utils.advanced_features import show_map, generate_alert, calculate_metrics
 
 # ---------------------------
 # 🔧 PAGE CONFIG
