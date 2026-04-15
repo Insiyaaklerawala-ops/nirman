@@ -45,12 +45,12 @@ st.markdown("""
 # 🧭 SIDEBAR NAVIGATION
 # ---------------------------
 st.sidebar.title("💧 Water Platform")
-menu = st.sidebar.radio("Navigate", [
-    "Dashboard",
+menu = st.sidebar.selectbox("Menu", [
     "Water Supply",
     "Report Leak",
     "View Leaks",
-    "Repair Logbook"
+    "Repair Logbook",
+    "Live Map & Alerts"
 ])
 
 # ---------------------------
@@ -191,3 +191,29 @@ elif menu == "Repair Logbook":
 # ---------------------------
 st.markdown("---")
 st.caption("Built for Smart City Water Management 🚰")
+elif menu == "Live Map & Alerts":
+    st.header("🗺️ Live Monitoring Dashboard")
+
+    leaks = load_leaks()
+
+    # Map
+    st.subheader("📍 Leak Locations")
+    show_map(leaks)
+
+    # Alerts
+    st.subheader("🚨 Alerts")
+    if st.button("Generate Alert"):
+        st.warning(generate_alert())
+
+    # Analytics
+    st.subheader("📊 Analytics")
+
+    total, water_loss, repair_time, cost = calculate_metrics(leaks)
+
+    col1, col2 = st.columns(2)
+
+    col1.metric("Total Leaks", total)
+    col1.metric("Water Loss (Liters)", water_loss)
+
+    col2.metric("Avg Repair Time (hrs)", repair_time)
+    col2.metric("Estimated Cost (₹)", cost)
