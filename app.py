@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-ffrom utils.database import (
+from utils.database import (
     save_leak,
     load_leaks,
     save_repair,
@@ -192,7 +192,7 @@ elif menu == "Repair Logbook":
 st.markdown("---")
 st.caption("Built for Smart City Water Management 🚰")
 elif menu == "Live Map & Alerts":
-    st.header("🗺️ Live Monitoring Dashboard")
+st.header("🗺️ Live Monitoring Dashboard")
 
     leaks = load_leaks()
 
