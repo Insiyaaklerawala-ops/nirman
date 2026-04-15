@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-ffrom utils.database import (
+from utils.database import (
     save_leak,
     load_leaks,
     save_repair,
