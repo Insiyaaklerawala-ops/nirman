@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WaterGrid — Smart Water Monitoring Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #0ea5e9; --blue-dark: #0369a1; --blue-light: #e0f2fe;
+  --teal: #14b8a6; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+  --amber: #f59e0b; --amber-dark: #b45309; --amber-light: #fef3c7;
+  --red: #ef4444; --red-dark: #b91c1c; --red-light: #fee2e2;
+  --green: #22c55e; --green-dark: #15803d; --green-light: #dcfce7;
+  --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1; --gray-400: #94a3b8; --gray-500: #64748b;
+  --gray-600: #475569; --gray-700: #334155; --gray-800: #1e293b; --gray-900: #0f172a;
+  --font: 'Space Grotesk', sans-serif; --mono: 'DM Mono', monospace;
+  --radius: 12px; --radius-sm: 8px; --radius-lg: 20px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.1), 0 8px 32px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--gray-50); color: var(--gray-900); font-size: 14px; line-height: 1.6; }
+button { font-family: var(--font); cursor: pointer; border: none; }
+input, select, textarea { font-family: var(--font); }
+
+/* === NAV === */
+.nav { background: var(--gray-900); color: white; padding: 0 24px; display: flex; align-items: center; gap: 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+.nav-brand { display: flex; align-items: center; gap: 10px; padding: 14px 0; margin-right: 32px; }
+.nav-brand .logo { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.nav-brand span { font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
+.nav-brand small { font-size: 10px; color: var(--gray-400); font-weight: 400; display: block; margin-top: -4px; letter-spacing: 0.5px; }
+.nav-tabs { display: flex; gap: 0; flex: 1; }
+.nav-tab { padding: 18px 20px; color: var(--gray-400); font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; transition: all .2s; white-space: nowrap; }
+.nav-tab:hover { color: white; background: rgba(255,255,255,.05); }
+.nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); background: rgba(14,165,233,.08); }
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; padding: 12px 0; }
+.alert-bell { position: relative; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); color: white; padding: 8px 10px; border-radius: var(--radius-sm); font-size: 16px; cursor: pointer; transition: background .2s; }
+.alert-bell:hover { background: rgba(255,255,255,.15); }
+.alert-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; border: 2px solid var(--gray-900); }
+.user-chip { background: linear-gradient(135deg, var(--blue-dark), var(--teal-dark)); color: white; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.role-toggle { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: var(--gray-300); padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; transition: all .2s; }
+.role-toggle:hover { background: rgba(255,255,255,.15); color: white; }
+
+/* === CONTENT === */
+.content { padding: 0; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* === DASHBOARD === */
+.dash-header { background: linear-gradient(135deg, var(--gray-900) 0%, #0c1a2e 50%, #0a1628 100%); color: white; padding: 40px 32px 80px; position: relative; overflow: hidden; }
+.dash-header::before { content: ''; position: absolute; top: -50%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(14,165,233,.15) 0%, transparent 70%); }
+.dash-header::after { content: ''; position: absolute; bottom: -30%; left: 5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(20,184,166,.1) 0%, transparent 70%); }
+.dash-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; position: relative; z-index: 1; }
+.dash-subtitle { color: var(--gray-400); font-size: 14px; position: relative; z-index: 1; }
+.dash-meta { display: flex; align-items: center; gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+.live-badge { background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3); color: var(--green); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.live-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.2)} }
+.dash-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 0 32px; margin-top: -40px; position: relative; z-index: 10; }
+.stat-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); }
+.stat-card .label { font-size: 12px; color: var(--gray-500); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.stat-card .value { font-size: 28px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+.stat-card .trend { font-size: 12px; color: var(--gray-500); display: flex; align-items: center; gap: 4px; }
+.stat-card .trend.up { color: var(--green-dark); }
+.stat-card .trend.down { color: var(--red-dark); }
+.stat-card .icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
+.icon-blue { background: var(--blue-light); }
+.icon-teal { background: var(--teal-light); }
+.icon-amber { background: var(--amber-light); }
+.icon-red { background: var(--red-light); }
+.dash-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; padding: 28px 32px; }
+.dash-main { display: flex; flex-direction: column; gap: 24px; }
+.card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--gray-200); overflow: hidden; }
+.card-header { padding: 18px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 15px; font-weight: 600; }
+.card-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+.card-body { padding: 20px 24px; }
+
+/* supply schedule */
+.schedule-grid { display: grid; gap: 10px; }
+.schedule-row { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 12px; padding: 12px 16px; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-100); }
+.schedule-row.active { background: var(--blue-light); border-color: rgba(14,165,233,.2); }
+.zone-name { font-weight: 600; font-size: 13px; }
+.zone-sub { font-size: 11px; color: var(--gray-500); }
+.supply-bar { height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; position: relative; }
+.supply-fill { height: 100%; border-radius: 4px; transition: width .5s; }
+.supply-fill.high { background: var(--teal); }
+.supply-fill.med { background: var(--amber); }
+.supply-fill.low { background: var(--red); }
+.supply-label { font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* map mock */
+.map-container { height: 280px; background: var(--gray-100); border-radius: var(--radius-sm); position: relative; overflow: hidden; }
+.map-bg { width: 100%; height: 100%; background: #e8f4f0; position: relative; }
+.map-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px); background-size: 40px 40px; }
+.map-road { position: absolute; background: rgba(255,255,255,.8); }
+.map-road.h { height: 6px; border-radius: 3px; }
+.map-road.v { width: 6px; border-radius: 3px; }
+.map-road.main { background: rgba(255,255,255,.95); }
+.map-road.h.main { height: 10px; }
+.map-road.v.main { width: 10px; }
+.leak-pin { position: absolute; transform: translate(-50%, -100%); cursor: pointer; }
+.leak-pin .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,.2); transition: transform .2s; }
+.leak-pin:hover .pin-dot { transform: scale(1.3); }
+.pin-critical { background: var(--red); }
+.pin-medium { background: var(--amber); }
+.pin-resolved { background: var(--green); }
+.pin-label { font-size: 10px; font-weight: 600; white-space: nowrap; background: white; padding: 2px 6px; border-radius: 4px; box-shadow: var(--shadow); margin-top: 2px; text-align: center; }
+.map-legend { position: absolute; bottom: 12px; left: 12px; background: rgba(255,255,255,.92); backdrop-filter: blur(4px); padding: 10px 14px; border-radius: 8px; display: flex; gap: 14px; font-size: 11px; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+.map-compass { position: absolute; top: 12px; right: 12px; background: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: var(--shadow); }
+
+/* alerts panel */
+.alerts-list { display: flex; flex-direction: column; gap: 1px; }
+.alert-item { padding: 14px 16px; border-radius: var(--radius-sm); cursor: pointer; transition: background .2s; border-left: 3px solid transparent; }
+.alert-item:hover { background: var(--gray-50); }
+.alert-item.critical { border-left-color: var(--red); background: rgba(239,68,68,.04); }
+.alert-item.warning { border-left-color: var(--amber); background: rgba(245,158,11,.04); }
+.alert-item.info { border-left-color: var(--blue); background: rgba(14,165,233,.04); }
+.alert-title { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.alert-meta { font-size: 11px; color: var(--gray-500); display: flex; align-items: center; gap: 8px; }
+.alert-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.badge-critical { background: var(--red-light); color: var(--red-dark); }
+.badge-warning { background: var(--amber-light); color: var(--amber-dark); }
+.badge-info { background: var(--blue-light); color: var(--blue-dark); }
+.badge-success { background: var(--green-light); color: var(--green-dark); }
+.badge-resolved { background: var(--gray-100); color: var(--gray-600); }
+
+/* sensor data */
+.sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sensor-card { background: var(--gray-50); border-radius: var(--radius-sm); padding: 14px; border: 1px solid var(--gray-100); }
+.sensor-loc { font-size: 11px; color: var(--gray-500); font-weight: 500; margin-bottom: 4px; }
+.sensor-val { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--gray-800); }
+.sensor-unit { font-size: 11px; color: var(--gray-400); margin-left: 2px; }
+.sensor-bar { height: 4px; background: var(--gray-200); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.sensor-fill { height: 100%; border-radius: 2px; transition: width 1s; }
+.anomaly-tag { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-top: 6px; display: inline-block; }
+
+/* === REPORT LEAK === */
+.report-container { max-width: 840px; margin: 0 auto; padding: 32px; }
+.report-steps { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+.step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+.step-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; transition: all .3s; }
+.step-num.done { background: var(--teal); color: white; }
+.step-num.active { background: var(--blue); color: white; box-shadow: 0 0 0 4px rgba(14,165,233,.2); }
+.step-num.pending { background: var(--gray-200); color: var(--gray-500); }
+.step-label { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+.step-line { flex: 1; height: 2px; background: var(--gray-200); margin: 0 8px; }
+.step-line.done { background: var(--teal); }
+.report-form { background: white; border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; }
+.form-section { padding: 24px; border-bottom: 1px solid var(--gray-100); }
+.form-section:last-child { border-bottom: none; }
+.form-section-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.form-section-sub { font-size: 13px; color: var(--gray-500); margin-bottom: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1/-1; }
+label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+input[type=text], input[type=email], select, textarea { padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 14px; color: var(--gray-900); transition: border-color .2s, box-shadow .2s; background: white; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(14,165,233,.12); }
+textarea { resize: vertical; min-height: 90px; }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.severity-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.sev-card { border: 2px solid var(--gray-200); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; cursor: pointer; transition: all .2s; }
+.sev-card:hover { border-color: var(--blue); background: var(--blue-light); }
+.sev-card.selected { border-color: var(--blue); background: var(--blue-light); }
+.sev-icon { font-size: 22px; margin-bottom: 6px; }
+.sev-name { font-size: 12px; font-weight: 600; }
+.sev-desc { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+
+/* image upload */
+.upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 32px; text-align: center; cursor: pointer; transition: all .2s; background: var(--gray-50); }
+.upload-zone:hover { border-color: var(--blue); background: var(--blue-light); }
+.upload-zone.dragover { border-color: var(--blue); background: var(--blue-light); }
+.upload-icon { font-size: 36px; margin-bottom: 10px; }
+.upload-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.upload-sub { font-size: 13px; color: var(--gray-500); }
+.upload-previews { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+.preview-card { position: relative; border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 4/3; background: var(--gray-100); border: 2px solid var(--gray-200); }
+.preview-card img { width: 100%; height: 100%; object-fit: cover; }
+.preview-remove { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.6); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* AI verification */
+.ai-verify-box { background: var(--gray-50); border-radius: var(--radius); padding: 20px; border: 1px solid var(--gray-200); }
+.ai-verify-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.ai-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
+.verify-title { font-size: 14px; font-weight: 600; }
+.verify-sub { font-size: 12px; color: var(--gray-500); }
+.ai-result { padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.ai-result.authentic { background: var(--green-light); border: 1px solid rgba(34,197,94,.2); }
+.ai-result.fake { background: var(--red-light); border: 1px solid rgba(239,68,68,.2); }
+.ai-result.checking { background: var(--amber-light); border: 1px solid rgba(245,158,11,.2); }
+.ai-progress { margin-top: 12px; }
+.progress-track { height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-500); margin-top: 6px; }
+
+/* submit btn */
+.btn { padding: 11px 24px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--blue); color: white; }
+.btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14,165,233,.3); }
+.btn-secondary { background: white; color: var(--gray-700); border: 1px solid var(--gray-200); }
+.btn-secondary:hover { background: var(--gray-50); border-color: var(--gray-300); }
+.btn-success { background: var(--teal); color: white; }
+.btn-success:hover { background: var(--teal-dark); }
+.btn-danger { background: var(--red); color: white; }
+.form-actions { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; background: var(--gray-50); border-top: 1px solid var(--gray-100); }
+
+/* === AUTHORITY PANEL === */
+.auth-container { padding: 28px 32px; }
+.auth-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.auth-toolbar-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-right: auto; }
+.filter-group { display: flex; gap: 8px; }
+.filter-btn { padding: 8px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; border: 1px solid var(--gray-200); background: white; color: var(--gray-600); cursor: pointer; transition: all .2s; }
+.filter-btn:hover { background: var(--gray-50); }
+.filter-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+.cases-table { background: white; border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; box-shadow: var(--shadow); }
+.table-header { display: grid; grid-template-columns: 60px 1fr 100px 120px 110px 140px 120px; padding: 12px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); }
+.table-row { display: grid; grid-template-columns: 60px 1fr 100px 120px 110px 140px 120px; padding: 14px 20px; border-bottom: 1px solid var(--gray-100); align-items: center; transition: background .15s; cursor: pointer; }
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: var(--gray-50); }
+.case-id { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--blue); }
+.case-loc { font-weight: 600; font-size: 13px; }
+.case-sub { font-size: 11px; color: var(--gray-500); }
+.status-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+.status-new { background: var(--red-light); color: var(--red-dark); }
+.status-assigned { background: var(--amber-light); color: var(--amber-dark); }
+.status-progress { background: var(--blue-light); color: var(--blue-dark); }
+.status-resolved { background: var(--green-light); color: var(--green-dark); }
+.priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.p-high { background: var(--red); }
+.p-med { background: var(--amber); }
+.p-low { background: var(--green); }
+
+/* case detail modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: white; border-radius: var(--radius-lg); max-width: 760px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.modal-header { padding: 24px 28px 20px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: flex-start; justify-content: space-between; }
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.modal-sub { font-size: 13px; color: var(--gray-500); }
+.modal-close { background: var(--gray-100); border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; color: var(--gray-500); display: flex; align-items: center; justify-content: center; transition: background .2s; flex-shrink: 0; }
+.modal-close:hover { background: var(--gray-200); }
+.modal-body { padding: 24px 28px; }
+.modal-section { margin-bottom: 24px; }
+.modal-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); margin-bottom: 12px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info-item { background: var(--gray-50); border-radius: var(--radius-sm); padding: 12px 16px; }
+.info-label { font-size: 11px; color: var(--gray-500); font-weight: 500; margin-bottom: 3px; }
+.info-value { font-size: 14px; font-weight: 600; }
+.image-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.img-box { background: var(--gray-100); border-radius: var(--radius-sm); aspect-ratio: 4/3; overflow: hidden; position: relative; border: 2px solid var(--gray-200); }
+.img-box img { width: 100%; height: 100%; object-fit: cover; }
+.img-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,.65); color: white; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+.img-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px; gap: 8px; }
+.img-placeholder .icon { font-size: 28px; }
+.logbook { display: flex; flex-direction: column; gap: 0; }
+.log-entry { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--gray-100); }
+.log-entry:last-child { border-bottom: none; }
+.log-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.log-body .log-action { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.log-body .log-meta { font-size: 11px; color: var(--gray-500); }
+.modal-footer { padding: 20px 28px; border-top: 1px solid var(--gray-100); display: flex; gap: 10px; justify-content: flex-end; background: var(--gray-50); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+
+/* cost tracker */
+.cost-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+.cost-item { background: var(--gray-50); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+.cost-val { font-size: 20px; font-weight: 700; font-family: var(--mono); }
+.cost-lbl { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+
+/* === LOGBOOK === */
+.logbook-container { padding: 28px 32px; }
+.logbook-filters { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.logbook-filters input, .logbook-filters select { width: 100%; }
+.lb-table { background: white; border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; }
+.lb-header { display: grid; grid-template-columns: 70px 1fr 110px 100px 100px 110px 100px; padding: 12px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--gray-500); letter-spacing: 0.5px; }
+.lb-row { display: grid; grid-template-columns: 70px 1fr 110px 100px 100px 110px 100px; padding: 14px 20px; border-bottom: 1px solid var(--gray-100); align-items: center; transition: background .15s; cursor: pointer; }
+.lb-row:hover { background: var(--gray-50); }
+.stat-mini { display: flex; gap: 8px; margin-top: 4px; }
+.mini-tag { font-size: 10px; padding: 2px 7px; border-radius: 8px; font-weight: 600; }
+.lb-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+
+/* === ALERTS PAGE === */
+.alerts-container { padding: 28px 32px; }
+.alerts-banner { background: linear-gradient(135deg, #450a0a, #7f1d1d); color: white; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+.alerts-banner .banner-icon { font-size: 28px; }
+.alerts-banner .banner-title { font-size: 16px; font-weight: 700; }
+.alerts-banner .banner-sub { font-size: 13px; color: rgba(255,255,255,.7); }
+.alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.alert-card { background: white; border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; box-shadow: var(--shadow); }
+.alert-card-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--gray-100); }
+.alert-card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.alert-card-body { padding: 16px 20px; }
+.sensor-readings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.reading-box { background: var(--gray-50); border-radius: var(--radius-sm); padding: 10px 14px; }
+.reading-label { font-size: 11px; color: var(--gray-500); font-weight: 500; }
+.reading-value { font-size: 18px; font-weight: 700; font-family: var(--mono); }
+.reading-unit { font-size: 11px; color: var(--gray-400); }
+.timeline { position: relative; padding-left: 20px; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: var(--gray-200); }
+.tl-item { position: relative; padding: 0 0 12px 16px; }
+.tl-item::before { content: ''; position: absolute; left: -14px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--gray-300); border: 2px solid white; }
+.tl-item.active::before { background: var(--blue); }
+.tl-item.done::before { background: var(--teal); }
+.tl-time { font-size: 11px; color: var(--gray-500); font-family: var(--mono); }
+.tl-text { font-size: 13px; font-weight: 500; }
+
+/* toast */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--gray-900); color: white; padding: 14px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 500; z-index: 300; transform: translateY(80px); opacity: 0; transition: all .3s; display: flex; align-items: center; gap: 10px; max-width: 360px; box-shadow: var(--shadow-md); }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast .toast-icon { font-size: 18px; }
+
+/* responsive basics */
+@media (max-width: 1100px) {
+  .dash-cards { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .table-header, .table-row { grid-template-columns: 60px 1fr 100px 100px 100px; }
+  .table-header > :nth-child(6), .table-row > :nth-child(6),
+  .table-header > :nth-child(7), .table-row > :nth-child(7) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="logo">💧</div>
+    <div>
+      <span>WaterGrid</span>
+      <small>WATER MONITORING PLATFORM</small>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('dashboard')">📊 Dashboard</div>
+    <div class="nav-tab" onclick="showPage('report')">📍 Report Leak</div>
+    <div class="nav-tab" onclick="showPage('authority')">🛠 Authority Panel</div>
+    <div class="nav-tab" onclick="showPage('logbook')">📋 Smart Logbook</div>
+    <div class="nav-tab" onclick="showPage('alerts')">🔔 Live Alerts</div>
+  </div>
+  <div class="nav-right">
+    <div class="alert-bell" onclick="showPage('alerts')">🔔 <div class="alert-dot"></div></div>
+    <button class="role-toggle" onclick="toggleRole()">Switch to: <span id="role-label">Authority</span></button>
+    <div class="user-chip">👤 Rajesh Kumar</div>
+  </div>
+</nav>
+
+<!-- PAGES -->
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="dash-header">
+    <div class="dash-title">Water Supply Dashboard</div>
+    <div class="dash-subtitle">Bilaspur Municipal Corporation — Zone Coverage Overview</div>
+    <div class="dash-meta">
+      <div class="live-badge"><div class="live-dot"></div> Live Monitoring</div>
+      <span style="color:var(--gray-500);font-size:13px">Last updated: 2 min ago</span>
+    </div>
+  </div>
+  <div class="dash-cards">
+    <div class="stat-card">
+      <div class="icon icon-blue">💧</div>
+      <div class="label">Supply Coverage</div>
+      <div class="value" style="color:var(--blue)">87%</div>
+      <div class="trend up">↑ 3% from yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon icon-red">⚠️</div>
+      <div class="label">Active Leaks</div>
+      <div class="value" style="color:var(--red)">14</div>
+      <div class="trend down">↑ 2 new today</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon icon-teal">✅</div>
+      <div class="label">Resolved Today</div>
+      <div class="value" style="color:var(--teal)">8</div>
+      <div class="trend up">Avg: 3.2 hrs</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon icon-amber">🚰</div>
+      <div class="label">Water Loss (L/hr)</div>
+      <div class="value" style="color:var(--amber)">4,820</div>
+      <div class="trend down">↓ 12% vs last week</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="dash-main">
+      <!-- Supply Schedule -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">⏰ Water Supply Schedule — Today</span>
+          <span class="card-badge" style="background:var(--teal-light);color:var(--teal-dark)">12 Zones Active</span>
+        </div>
+        <div class="card-body">
+          <div class="schedule-grid">
+            <div class="schedule-row active">
+              <div><div class="zone-name">Civil Lines</div><div class="zone-sub">6:00 AM – 9:00 AM</div></div>
+              <div><div class="supply-bar"><div class="supply-fill high" style="width:92%"></div></div></div>
+              <div class="supply-label" style="color:var(--teal-dark)">92% ✓</div>
+            </div>
+            <div class="schedule-row active">
+              <div><div class="zone-name">Vyapari Colony</div><div class="zone-sub">7:00 AM – 10:00 AM</div></div>
+              <div><div class="supply-bar"><div class="supply-fill med" style="width:68%"></div></div></div>
+              <div class="supply-label" style="color:var(--amber-dark)">68% ⚡</div>
+            </div>
+            <div class="schedule-row">
+              <div><div class="zone-name">Koni Sector</div><div class="zone-sub">9:00 AM – 12:00 PM</div></div>
+              <div><div class="supply-bar"><div class="supply-fill high" style="width:85%"></div></div></div>
+              <div class="supply-label" style="color:var(--teal-dark)">85% ✓</div>
+            </div>
+            <div class="schedule-row">
+              <div><div class="zone-name">Torwa Area</div><div class="zone-sub">12:00 PM – 3:00 PM</div></div>
+              <div><div class="supply-bar"><div class="supply-fill low" style="width:34%"></div></div></div>
+              <div class="supply-label" style="color:var(--red-dark)">34% ⚠</div>
+            </div>
+            <div class="schedule-row">
+              <div><div class="zone-name">Gol Bazaar</div><div class="zone-sub">5:00 PM – 8:00 PM</div></div>
+              <div><div class="supply-bar"><div class="supply-fill high" style="width:79%"></div></div></div>
+              <div class="supply-label" style="color:var(--teal-dark)">79% ✓</div>
+            </div>
+            <div class="schedule-row">
+              <div><div class="zone-name">Sadar Bazar</div><div class="zone-sub">6:00 PM – 9:00 PM</div></div>
+              <div><div class="supply-bar"><div class="supply-fill med" style="width:55%"></div></div></div>
+              <div class="supply-label" style="color:var(--amber-dark)">55% ⚡</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🗺 Leak Map — Bilaspur City</span>
+          <div style="display:flex;gap:8px">
+            <span class="card-badge badge-critical">4 Critical</span>
+            <span class="card-badge badge-warning">7 Active</span>
+          </div>
+        </div>
+        <div class="card-body" style="padding-bottom:0">
+          <div class="map-container" style="height:320px">
+            <div class="map-bg">
+              <div class="map-grid"></div>
+              <!-- Roads -->
+              <div class="map-road h main" style="top:35%;left:0;width:100%"></div>
+              <div class="map-road h main" style="top:62%;left:0;width:100%"></div>
+              <div class="map-road v main" style="left:30%;top:0;height:100%"></div>
+              <div class="map-road v main" style="left:65%;top:0;height:100%"></div>
+              <div class="map-road h" style="top:20%;left:20%;width:60%"></div>
+              <div class="map-road h" style="top:48%;left:10%;width:80%"></div>
+              <div class="map-road h" style="top:75%;left:15%;width:70%"></div>
+              <div class="map-road v" style="left:15%;top:20%;height:60%"></div>
+              <div class="map-road v" style="left:48%;top:10%;height:80%"></div>
+              <div class="map-road v" style="left:80%;top:15%;height:70%"></div>
+
+              <!-- Leak Pins -->
+              <div class="leak-pin" style="left:28%;top:36%" onclick="openModal('leak1')">
+                <div class="pin-dot pin-critical"></div>
+                <div class="pin-label" style="color:var(--red-dark)">CRIT</div>
+              </div>
+              <div class="leak-pin" style="left:52%;top:55%" onclick="openModal('leak2')">
+                <div class="pin-dot pin-medium"></div>
+                <div class="pin-label" style="color:var(--amber-dark)">MED</div>
+              </div>
+              <div class="leak-pin" style="left:70%;top:40%">
+                <div class="pin-dot pin-resolved"></div>
+                <div class="pin-label" style="color:var(--green-dark)">DONE</div>
+              </div>
+              <div class="leak-pin" style="left:35%;top:68%">
+                <div class="pin-dot pin-critical"></div>
+                <div class="pin-label" style="color:var(--red-dark)">CRIT</div>
+              </div>
+              <div class="leak-pin" style="left:18%;top:45%">
+                <div class="pin-dot pin-medium"></div>
+                <div class="pin-label" style="color:var(--amber-dark)">MED</div>
+              </div>
+              <div class="leak-pin" style="left:80%;top:65%">
+                <div class="pin-dot pin-resolved"></div>
+                <div class="pin-label" style="color:var(--green-dark)">DONE</div>
+              </div>
+              <div class="leak-pin" style="left:60%;top:22%">
+                <div class="pin-dot pin-critical"></div>
+                <div class="pin-label" style="color:var(--red-dark)">CRIT</div>
+              </div>
+
+              <!-- Legend -->
+              <div class="map-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Critical</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Active</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Resolved</div>
+              </div>
+              <div class="map-compass">N</div>
+            </div>
+          </div>
+          <div style="padding:14px 0;display:flex;gap:12px;align-items:center">
+            <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px" onclick="showToast('📍 Opening full interactive map...')">🔍 Full Map View</button>
+            <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px" onclick="showToast('📤 Exporting map data...')">📤 Export</button>
+            <span style="font-size:12px;color:var(--gray-500);margin-left:auto">Click pins for details</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <!-- Sensor Feed -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📡 Live Sensor Data</span>
+          <span class="card-badge badge-success">12 Online</span>
+        </div>
+        <div class="card-body">
+          <div class="sensor-grid">
+            <div class="sensor-card">
+              <div class="sensor-loc">Civil Lines Junction</div>
+              <div><span class="sensor-val">3.2</span><span class="sensor-unit">bar</span></div>
+              <div class="sensor-bar"><div class="sensor-fill" style="width:64%;background:var(--blue)"></div></div>
+              <div class="anomaly-tag" style="background:var(--green-light);color:var(--green-dark)">✓ Normal</div>
+            </div>
+            <div class="sensor-card" style="background:#fff5f5;border-color:rgba(239,68,68,.2)">
+              <div class="sensor-loc">Torwa Main Line</div>
+              <div><span class="sensor-val" style="color:var(--red)">0.8</span><span class="sensor-unit">bar</span></div>
+              <div class="sensor-bar"><div class="sensor-fill" style="width:16%;background:var(--red)"></div></div>
+              <div class="anomaly-tag" style="background:var(--red-light);color:var(--red-dark)">⚠ Low Pressure</div>
+            </div>
+            <div class="sensor-card">
+              <div class="sensor-loc">Gol Bazaar Node</div>
+              <div><span class="sensor-val">2.7</span><span class="sensor-unit">bar</span></div>
+              <div class="sensor-bar"><div class="sensor-fill" style="width:54%;background:var(--teal)"></div></div>
+              <div class="anomaly-tag" style="background:var(--green-light);color:var(--green-dark)">✓ Normal</div>
+            </div>
+            <div class="sensor-card" style="background:#fffbeb;border-color:rgba(245,158,11,.2)">
+              <div class="sensor-loc">Koni Sector B</div>
+              <div><span class="sensor-val" style="color:var(--amber)">1.9</span><span class="sensor-unit">bar</span></div>
+              <div class="sensor-bar"><div class="sensor-fill" style="width:38%;background:var(--amber)"></div></div>
+              <div class="anomaly-tag" style="background:var(--amber-light);color:var(--amber-dark)">⚡ Watch</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-100);font-size:12px;color:var(--gray-500);display:flex;justify-content:space-between">
+            <span>🔄 Auto-refreshes every 30s</span>
+            <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('🔄 Refreshing sensor data...')">Refresh Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Alerts -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🚨 Recent Alerts</span>
+          <span class="card-badge badge-critical">3 New</span>
+        </div>
+        <div class="alerts-list">
+          <div class="alert-item critical">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="alert-title">🔴 Major Burst — Torwa</div>
+              <span class="alert-badge badge-critical">Critical</span>
+            </div>
+            <div class="alert-meta">📍 Near Water Tank No.3 &nbsp;•&nbsp; 2 min ago</div>
+          </div>
+          <div class="alert-item warning">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="alert-title">⚡ Pressure Drop — Koni</div>
+              <span class="alert-badge badge-warning">Warning</span>
+            </div>
+            <div class="alert-meta">📡 Sensor KN-07 triggered &nbsp;•&nbsp; 15 min ago</div>
+          </div>
+          <div class="alert-item info">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="alert-title">ℹ️ New Report Filed — Sadar</div>
+              <span class="alert-badge badge-info">Info</span>
+            </div>
+            <div class="alert-meta">👤 Citizen report verified &nbsp;•&nbsp; 38 min ago</div>
+          </div>
+          <div class="alert-item" style="border-left:3px solid var(--green)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div class="alert-title" style="color:var(--green-dark)">✅ Resolved — Civil Lines</div>
+              <span class="alert-badge badge-success">Resolved</span>
+            </div>
+            <div class="alert-meta">🛠 Repair completed &nbsp;•&nbsp; 1 hr ago</div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--gray-100)">
+          <button class="btn btn-secondary" style="width:100%;font-size:12px;justify-content:center" onclick="showPage('alerts')">View All Alerts →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT LEAK PAGE -->
+<div id="page-report" class="page">
+  <div class="report-container">
+    <div style="margin-bottom:24px">
+      <h1 style="font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px">📍 Report a Water Leak</h1>
+      <p style="color:var(--gray-500);font-size:14px">Help us fix leaks faster. Your report goes directly to the nearest repair team.</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="report-steps">
+      <div class="step-item">
+        <div class="step-num active" id="step1-num">1</div>
+        <div class="step-label">Location & Details</div>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-item">
+        <div class="step-num pending" id="step2-num">2</div>
+        <div class="step-label">Upload Photos</div>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-item">
+        <div class="step-num pending" id="step3-num">3</div>
+        <div class="step-label">AI Verification</div>
+      </div>
+      <div class="step-line" id="line3"></div>
+      <div class="step-item">
+        <div class="step-num pending" id="step4-num">4</div>
+        <div class="step-label">Confirm & Submit</div>
+      </div>
+    </div>
+
+    <div class="report-form">
+      <!-- Step 1: Location -->
+      <div class="form-section" id="form-step1">
+        <div class="form-section-title">📌 Location & Leak Details</div>
+        <div class="form-section-sub">Tell us where the leak is and how severe it appears.</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Area / Ward</label>
+            <select id="sel-area">
+              <option value="">Select area...</option>
+              <option>Civil Lines</option>
+              <option>Vyapari Colony</option>
+              <option>Koni Sector</option>
+              <option>Torwa Area</option>
+              <option>Gol Bazaar</option>
+              <option>Sadar Bazar</option>
+              <option>Sarkanda</option>
+              <option>Mangla</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Street / Landmark</label>
+            <input type="text" placeholder="e.g., Near State Bank ATM, Main Road" id="inp-street">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Leak Type</label>
+            <select>
+              <option>Underground pipe burst</option>
+              <option>Surface crack / joint leak</option>
+              <option>Fire hydrant leak</option>
+              <option>Water meter leakage</option>
+              <option>Overflowing manhole</option>
+              <option>Household connection</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estimated Water Flow</label>
+            <select>
+              <option>Dripping (< 1 L/hr)</option>
+              <option>Steady stream (1–10 L/hr)</option>
+              <option>Heavy flow (10–50 L/hr)</option>
+              <option>Major burst (> 50 L/hr)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea placeholder="Describe what you're seeing — water color, smell, road damage, etc."></textarea>
+          </div>
+        </div>
+        <div style="margin-bottom:8px;font-size:13px;font-weight:600">Severity Level</div>
+        <div class="severity-grid">
+          <div class="sev-card" onclick="selectSeverity(this)">
+            <div class="sev-icon">💧</div>
+            <div class="sev-name">Low</div>
+            <div class="sev-desc">Minor drip</div>
+          </div>
+          <div class="sev-card selected" onclick="selectSeverity(this)">
+            <div class="sev-icon">💦</div>
+            <div class="sev-name">Medium</div>
+            <div class="sev-desc">Steady flow</div>
+          </div>
+          <div class="sev-card" onclick="selectSeverity(this)">
+            <div class="sev-icon">🌊</div>
+            <div class="sev-name">High</div>
+            <div class="sev-desc">Heavy stream</div>
+          </div>
+          <div class="sev-card" onclick="selectSeverity(this)">
+            <div class="sev-icon">🚨</div>
+            <div class="sev-name">Critical</div>
+            <div class="sev-desc">Major burst</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Photo Upload -->
+      <div class="form-section">
+        <div class="form-section-title">📷 Photo Evidence <span style="font-size:12px;background:var(--red-light);color:var(--red-dark);padding:2px 8px;border-radius:8px;font-weight:600">Required</span></div>
+        <div class="form-section-sub">Upload clear photos of the leak. Minimum 1 photo required. AI will verify authenticity automatically.</div>
+        
+        <div class="upload-zone" id="upload-zone" onclick="simulateUpload()">
+          <div class="upload-icon">📸</div>
+          <div class="upload-title">Click to upload or drag & drop</div>
+          <div class="upload-sub">JPG, PNG, HEIC supported • Max 10MB each • Up to 5 photos</div>
+          <button class="btn btn-secondary" style="margin-top:14px;font-size:12px" onclick="event.stopPropagation();simulateUpload()">📂 Browse Files</button>
+        </div>
+        <div class="upload-previews" id="upload-previews"></div>
+        <div style="margin-top:12px;padding:10px 14px;background:var(--amber-light);border-radius:var(--radius-sm);border:1px solid rgba(245,158,11,.2);font-size:12px;color:var(--amber-dark);display:flex;align-items:center;gap:8px">
+          <span>💡</span> <strong>Tip:</strong> Take photos from multiple angles. Include nearby landmarks for location verification.
+        </div>
+      </div>
+
+      <!-- Step 3: AI Verification -->
+      <div class="form-section">
+        <div class="form-section-title">🤖 AI Image Verification</div>
+        <div class="form-section-sub">Our AI checks for fake, AI-generated, or duplicate images to ensure reports are genuine.</div>
+        <div class="ai-verify-box">
+          <div class="ai-verify-header">
+            <div class="ai-icon">🧠</div>
+            <div>
+              <div class="verify-title">AquaVision AI Detector</div>
+              <div class="verify-sub">Analyzes metadata, compression artifacts & GAN signatures</div>
+            </div>
+          </div>
+          <div id="ai-status-msg" style="font-size:13px;color:var(--gray-600)">Upload images above to run AI verification.</div>
+          <div class="ai-progress" id="ai-progress" style="display:none">
+            <div class="progress-track"><div class="progress-fill" id="ai-bar" style="width:0;background:linear-gradient(90deg,var(--blue),var(--teal))"></div></div>
+            <div class="progress-labels"><span id="ai-step">Initializing...</span><span id="ai-pct">0%</span></div>
+          </div>
+          <div class="ai-result authentic" id="ai-result" style="display:none">
+            <span style="font-size:22px">✅</span>
+            <div>
+              <div style="font-weight:700;color:var(--green-dark)">Images Verified — Authentic</div>
+              <div style="font-size:12px;color:var(--green-dark);opacity:.8">No AI generation or manipulation detected. Confidence: 96.4%</div>
+            </div>
+          </div>
+          <div id="ai-checks" style="display:none;margin-top:14px">
+            <div style="font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:8px">VERIFICATION CHECKS</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span>📊 EXIF Metadata</span><span style="color:var(--green-dark);font-weight:600">✓ Present & Valid</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span>🔍 GAN Artifact Detection</span><span style="color:var(--green-dark);font-weight:600">✓ None Detected</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span>🗜 Compression Analysis</span><span style="color:var(--green-dark);font-weight:600">✓ Original Camera</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span>📍 GPS Coordinates</span><span style="color:var(--green-dark);font-weight:600">✓ Location Matched</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span>🔁 Duplicate Check</span><span style="color:var(--green-dark);font-weight:600">✓ No Duplicates</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact info -->
+      <div class="form-section">
+        <div class="form-section-title">👤 Your Contact</div>
+        <div class="form-section-sub">Optional — helps us follow up on your report.</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" placeholder="Your full name" value="Rajesh Kumar">
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="text" placeholder="+91 98XXXXXXXX" value="+91 98765 43210">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="showPage('dashboard')">← Back</button>
+        <button class="btn btn-primary" onclick="submitReport()">📤 Submit Leak Report →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTHORITY PANEL -->
+<div id="page-authority" class="page">
+  <div class="auth-container">
+    <div class="auth-toolbar">
+      <div class="auth-toolbar-title">🛠 Authority Repair Panel</div>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="setFilter(this,'all')">All Cases</button>
+        <button class="filter-btn" onclick="setFilter(this,'new')">New</button>
+        <button class="filter-btn" onclick="setFilter(this,'assigned')">Assigned</button>
+        <button class="filter-btn" onclick="setFilter(this,'progress')">In Progress</button>
+        <button class="filter-btn" onclick="setFilter(this,'resolved')">Resolved</button>
+      </div>
+      <button class="btn btn-primary" style="font-size:13px" onclick="showToast('📊 Generating report...')">📊 Export Report</button>
+    </div>
+
+    <!-- Summary -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+      <div class="stat-card"><div class="label">Total Cases</div><div class="value">47</div></div>
+      <div class="stat-card"><div class="label">Avg Response Time</div><div class="value" style="color:var(--blue)">2.4h</div></div>
+      <div class="stat-card"><div class="label">Water Saved (Today)</div><div class="value" style="color:var(--teal)">12KL</div></div>
+      <div class="stat-card"><div class="label">Cost This Month</div><div class="value" style="color:var(--amber)">₹2.1L</div></div>
+    </div>
+
+    <div class="cases-table">
+      <div class="table-header">
+        <div>ID</div><div>Location</div><div>Status</div><div>Priority</div><div>Reported</div><div>Assigned To</div><div>Action</div>
+      </div>
+      <div class="table-row" onclick="openCaseModal('case1')">
+        <div class="case-id">#WL-047</div>
+        <div><div class="case-loc">Torwa Main Road</div><div class="case-sub">Near Water Tank No.3</div></div>
+        <div><span class="status-pill status-new">New</span></div>
+        <div><span class="priority-dot p-high"></span>Critical</div>
+        <div style="font-size:12px;color:var(--gray-500)">2 min ago</div>
+        <div style="font-size:12px;color:var(--gray-400)">Unassigned</div>
+        <div><button class="btn btn-primary" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();showToast('✅ Case #WL-047 assigned!')">Assign</button></div>
+      </div>
+      <div class="table-row" onclick="openCaseModal('case2')">
+        <div class="case-id">#WL-046</div>
+        <div><div class="case-loc">Civil Lines Junction</div><div class="case-sub">Opp. Collector Office</div></div>
+        <div><span class="status-pill status-progress">In Progress</span></div>
+        <div><span class="priority-dot p-high"></span>High</div>
+        <div style="font-size:12px;color:var(--gray-500)">1 hr ago</div>
+        <div style="font-size:12px;color:var(--gray-700);font-weight:600">Team A (3 men)</div>
+        <div><button class="btn btn-success" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();openCaseModal('case2')">Update</button></div>
+      </div>
+      <div class="table-row" onclick="openCaseModal('case3')">
+        <div class="case-id">#WL-045</div>
+        <div><div class="case-loc">Koni Sector B, Lane 4</div><div class="case-sub">Near School Gate</div></div>
+        <div><span class="status-pill status-assigned">Assigned</span></div>
+        <div><span class="priority-dot p-med"></span>Medium</div>
+        <div style="font-size:12px;color:var(--gray-500)">3 hrs ago</div>
+        <div style="font-size:12px;color:var(--gray-700);font-weight:600">Team C (2 men)</div>
+        <div><button class="btn btn-secondary" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();openCaseModal('case3')">Details</button></div>
+      </div>
+      <div class="table-row" onclick="openCaseModal('case4')">
+        <div class="case-id">#WL-044</div>
+        <div><div class="case-loc">Gol Bazaar, Main St.</div><div class="case-sub">Near Market Square</div></div>
+        <div><span class="status-pill status-resolved">Resolved</span></div>
+        <div><span class="priority-dot p-med"></span>Medium</div>
+        <div style="font-size:12px;color:var(--gray-500)">5 hrs ago</div>
+        <div style="font-size:12px;color:var(--gray-700);font-weight:600">Team B (4 men)</div>
+        <div><button class="btn btn-secondary" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();openCaseModal('case4')">View Log</button></div>
+      </div>
+      <div class="table-row">
+        <div class="case-id">#WL-043</div>
+        <div><div class="case-loc">Sadar Bazar</div><div class="case-sub">Fire hydrant — Lane 7</div></div>
+        <div><span class="status-pill status-assigned">Assigned</span></div>
+        <div><span class="priority-dot p-low"></span>Low</div>
+        <div style="font-size:12px;color:var(--gray-500)">8 hrs ago</div>
+        <div style="font-size:12px;color:var(--gray-700);font-weight:600">Team D (2 men)</div>
+        <div><button class="btn btn-secondary" style="font-size:11px;padding:6px 12px" onclick="showToast('📋 Details loaded')">Details</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGBOOK PAGE -->
+<div id="page-logbook" class="page">
+  <div class="logbook-container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.3px">📋 Smart Repair Logbook</h1>
+        <p style="color:var(--gray-500);font-size:13px;margin-top:2px">Complete audit trail of all repairs with time, water loss, and cost data</p>
+      </div>
+      <button class="btn btn-primary" onclick="showToast('📊 Exporting full logbook...')">📥 Export CSV</button>
+    </div>
+
+    <div class="lb-summary">
+      <div class="stat-card"><div class="label">Cases This Month</div><div class="value" style="color:var(--blue)">47</div><div class="trend">Since Apr 1</div></div>
+      <div class="stat-card"><div class="label">Total Water Saved</div><div class="value" style="color:var(--teal)">89 KL</div><div class="trend up">↑ 18% vs last month</div></div>
+      <div class="stat-card"><div class="label">Avg Repair Time</div><div class="value" style="color:var(--amber)">3.1 hrs</div><div class="trend down">↓ 0.4h improvement</div></div>
+      <div class="stat-card"><div class="label">Total Cost</div><div class="value" style="color:var(--gray-700)">₹4.7L</div><div class="trend">Incl. materials+labor</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <input type="text" placeholder="🔍 Search case ID, location..." style="width:100%">
+      <select style="width:100%"><option>All Zones</option><option>Civil Lines</option><option>Torwa</option><option>Koni</option><option>Sadar</option></select>
+      <select style="width:100%"><option>All Statuses</option><option>Resolved</option><option>In Progress</option><option>Assigned</option></select>
+      <select style="width:100%"><option>This Month</option><option>Last 7 Days</option><option>Last 30 Days</option><option>Custom Range</option></select>
+    </div>
+
+    <div class="lb-table">
+      <div class="lb-header">
+        <div>Case ID</div><div>Location</div><div>Repair Time</div><div>Water Loss</div><div>Cost</div><div>Status</div><div>Images</div>
+      </div>
+      <div class="lb-row" onclick="openCaseModal('case4')">
+        <div class="case-id">#WL-044</div>
+        <div><div class="case-loc">Gol Bazaar</div><div class="case-sub">Main Street, Market Sq.</div></div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--teal-dark)">2h 45m</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue-dark)">320 L</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600">₹8,200</div>
+        <div><span class="status-pill status-resolved">Resolved</span></div>
+        <div><div class="stat-mini"><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">Before ✓</span><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">After ✓</span></div></div>
+      </div>
+      <div class="lb-row">
+        <div class="case-id">#WL-042</div>
+        <div><div class="case-loc">Civil Lines</div><div class="case-sub">Near Collector Office</div></div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--teal-dark)">1h 20m</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue-dark)">90 L</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600">₹3,400</div>
+        <div><span class="status-pill status-resolved">Resolved</span></div>
+        <div><div class="stat-mini"><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">Before ✓</span><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">After ✓</span></div></div>
+      </div>
+      <div class="lb-row">
+        <div class="case-id">#WL-041</div>
+        <div><div class="case-loc">Koni Sector A</div><div class="case-sub">Garden Road Junction</div></div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--amber-dark)">5h 10m</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--red-dark)">1,850 L</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600">₹22,600</div>
+        <div><span class="status-pill status-resolved">Resolved</span></div>
+        <div><div class="stat-mini"><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">Before ✓</span><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">After ✓</span></div></div>
+      </div>
+      <div class="lb-row">
+        <div class="case-id">#WL-039</div>
+        <div><div class="case-loc">Vyapari Colony</div><div class="case-sub">Main Supply Pipe, Blk C</div></div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--teal-dark)">3h 05m</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--blue-dark)">640 L</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600">₹11,800</div>
+        <div><span class="status-pill status-resolved">Resolved</span></div>
+        <div><div class="stat-mini"><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">Before ✓</span><span class="mini-tag" style="background:var(--red-light);color:var(--red-dark)">After ✗</span></div></div>
+      </div>
+      <div class="lb-row">
+        <div class="case-id">#WL-046</div>
+        <div><div class="case-loc">Civil Lines</div><div class="case-sub">Collector Office Opp.</div></div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--gray-400)">In progress</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--gray-400)">Live</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--gray-400)">Pending</div>
+        <div><span class="status-pill status-progress">In Progress</span></div>
+        <div><div class="stat-mini"><span class="mini-tag" style="background:var(--teal-light);color:var(--teal-dark)">Before ✓</span><span class="mini-tag" style="background:var(--amber-light);color:var(--amber-dark)">After ...</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTS PAGE -->
+<div id="page-alerts" class="page">
+  <div class="alerts-container">
+    <div class="alerts-banner">
+      <div class="banner-icon">🚨</div>
+      <div>
+        <div class="banner-title">3 Critical Alerts Require Immediate Attention</div>
+        <div class="banner-sub">Real-time sensor network monitoring 47 points across Bilaspur</div>
+      </div>
+      <button class="btn" style="background:rgba(255,255,255,.15);color:white;margin-left:auto;font-size:13px" onclick="showToast('📨 Alerts sent to all teams!')">📨 Alert All Teams</button>
+    </div>
+
+    <div class="alerts-grid">
+      <!-- Alert 1 -->
+      <div class="alert-card">
+        <div class="alert-card-header">
+          <div class="alert-card-icon" style="background:var(--red-light)">🚨</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px">Major Burst — Torwa Main Road</div>
+            <div style="font-size:12px;color:var(--gray-500)">Sensor TW-03 • 2 minutes ago</div>
+          </div>
+          <span class="status-pill status-new">CRITICAL</span>
+        </div>
+        <div class="alert-card-body">
+          <div class="sensor-readings">
+            <div class="reading-box">
+              <div class="reading-label">Pressure Drop</div>
+              <div><span class="reading-value" style="color:var(--red)">0.3</span><span class="reading-unit"> bar</span></div>
+            </div>
+            <div class="reading-box">
+              <div class="reading-label">Flow Anomaly</div>
+              <div><span class="reading-value" style="color:var(--red)">+380</span><span class="reading-unit"> %</span></div>
+            </div>
+            <div class="reading-box">
+              <div class="reading-label">Est. Loss Rate</div>
+              <div><span class="reading-value">120</span><span class="reading-unit"> L/hr</span></div>
+            </div>
+            <div class="reading-box">
+              <div class="reading-label">Affected Zone</div>
+              <div style="font-size:14px;font-weight:700">TW-B, TW-C</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-danger" style="flex:1;font-size:12px;justify-content:center" onclick="showToast('🚨 Emergency team dispatched to Torwa!')">🚑 Dispatch Emergency</button>
+            <button class="btn btn-secondary" style="font-size:12px" onclick="openCaseModal('case2')">📋 Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert 2 -->
+      <div class="alert-card">
+        <div class="alert-card-header">
+          <div class="alert-card-icon" style="background:var(--amber-light)">⚡</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px">Pressure Drop — Koni Sector</div>
+            <div style="font-size:12px;color:var(--gray-500)">Sensor KN-07 • 15 minutes ago</div>
+          </div>
+          <span class="status-pill status-assigned">WARNING</span>
+        </div>
+        <div class="alert-card-body">
+          <div class="sensor-readings">
+            <div class="reading-box">
+              <div class="reading-label">Current Pressure</div>
+              <div><span class="reading-value" style="color:var(--amber)">1.9</span><span class="reading-unit"> bar</span></div>
+            </div>
+            <div class="reading-box">
+              <div class="reading-label">Normal Baseline</div>
+              <div><span class="reading-value">3.1</span><span class="reading-unit"> bar</span></div>
+            </div>
+            <div class="reading-box">
+              <div class="reading-label">Duration</div>
+              <div><span class="reading-value">15</span><span class="reading-unit"> min</span></div>
+            </div>
+            <div class="reading-box">
+              <div class="reading-label">Trend</div>
+              <div style="font-size:14px;font-weight:700;color:var(--amber)">↓ Falling</div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <div class="timeline">
+              <div class="tl-item done">
+                <div class="tl-time">09:12 AM</div>
+                <div class="tl-text">Sensor KN-07 flagged anomaly</div>
+              </div>
+              <div class="tl-item done">
+                <div class="tl-time">09:14 AM</div>
+                <div class="tl-text">Alert generated & logged</div>
+              </div>
+              <div class="tl-item active">
+                <div class="tl-time">09:27 AM</div>
+                <div class="tl-text">Team C investigating</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-time">Pending</div>
+                <div class="tl-text">Field confirmation</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert 3 -->
+      <div class="alert-card">
+        <div class="alert-card-header">
+          <div class="alert-card-icon" style="background:var(--blue-light)">ℹ️</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px">New Citizen Report — Sadar Bazar</div>
+            <div style="font-size:12px;color:var(--gray-500)">Verified Report • 38 minutes ago</div>
+          </div>
+          <span class="status-pill status-progress">VERIFIED</span>
+        </div>
+        <div class="alert-card-body">
+          <div style="background:var(--gray-50);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px">
+            <div style="font-size:13px;color:var(--gray-600);margin-bottom:8px">"There's a steady stream of water coming out from under the footpath near the old post office. It's been there since morning."</div>
+            <div style="font-size:11px;color:var(--gray-400)">— Priya Verma, Resident • AI Verified: Authentic ✅</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1;font-size:12px;justify-content:center" onclick="showToast('✅ Assigned to Team D!')">Assign Team</button>
+            <button class="btn btn-secondary" style="font-size:12px" onclick="showToast('📍 Opening map view...')">🗺 Map View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert 4 - Resolved -->
+      <div class="alert-card">
+        <div class="alert-card-header">
+          <div class="alert-card-icon" style="background:var(--green-light)">✅</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px">Resolved — Civil Lines Junction</div>
+            <div style="font-size:12px;color:var(--gray-500)">Case #WL-044 • 1 hour ago</div>
+          </div>
+          <span class="status-pill status-resolved">RESOLVED</span>
+        </div>
+        <div class="alert-card-body">
+          <div class="sensor-readings">
+            <div class="reading-box">
+              <div class="reading-label">Repair Time</div>
+              <div><span class="reading-value" style="color:var(--teal)">2h 45m</span></div>
+            </div>
+            <div class="reading-box">
+              <div class="reading-label">Water Saved</div>
+              <div><span class="reading-value" style="color:var(--blue)">320 L</span></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:10px;background:var(--green-light);border-radius:var(--radius-sm);font-size:12px;color:var(--green-dark)">
+            ✅ Before & after photos verified. Pressure restored to 2.9 bar. Logbook entry complete.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CASE DETAIL MODAL -->
+<div class="modal-overlay" id="case-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-case-title">Case #WL-046 — Civil Lines Junction</div>
+        <div class="modal-sub" id="modal-case-sub">Opposite Collector Office • Reported 1 hour ago</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">Case Information</div>
+        <div class="info-grid">
+          <div class="info-item"><div class="info-label">Status</div><div class="info-value"><span class="status-pill status-progress">In Progress</span></div></div>
+          <div class="info-item"><div class="info-label">Priority</div><div class="info-value"><span class="priority-dot p-high"></span>High</div></div>
+          <div class="info-item"><div class="info-label">Reported By</div><div class="info-value">Rajesh Kumar</div></div>
+          <div class="info-item"><div class="info-label">Assigned To</div><div class="info-value">Team A (3 workers)</div></div>
+          <div class="info-item"><div class="info-label">Leak Type</div><div class="info-value">Underground Pipe Burst</div></div>
+          <div class="info-item"><div class="info-label">Est. Flow Rate</div><div class="info-value">45 L/hr</div></div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Before & After Photos</div>
+        <div class="image-pair">
+          <div class="img-box">
+            <div style="width:100%;height:100%;background:linear-gradient(160deg,#1a3a4a,#0d2030);display:flex;align-items:center;justify-content:center;position:relative">
+              <!-- Simulated leak photo -->
+              <svg width="100%" height="100%" viewBox="0 0 200 150" style="position:absolute;inset:0">
+                <rect fill="#1a3a4a" width="200" height="150"/>
+                <rect fill="#2d4a5a" y="100" width="200" height="50"/>
+                <!-- Road -->
+                <rect fill="#3a4a5a" y="80" width="200" height="40"/>
+                <rect fill="#4a5a6a" y="85" x="10" width="180" height="2" rx="1"/>
+                <!-- Water puddle -->
+                <ellipse cx="100" cy="105" rx="45" ry="12" fill="rgba(14,165,233,.4)"/>
+                <ellipse cx="100" cy="105" rx="35" ry="8" fill="rgba(14,165,233,.6)"/>
+                <!-- Water stream -->
+                <path d="M100 75 Q95 85 100 90 Q105 95 100 105" stroke="rgba(14,165,233,.9)" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <!-- Crack in road -->
+                <path d="M85 88 Q95 90 100 88 Q110 86 120 88" stroke="#2a3a4a" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div class="img-label">Before Repair</div>
+          </div>
+          <div class="img-box" id="modal-after-img">
+            <div class="img-placeholder"><div class="icon">📷</div><div>After photo pending</div><div style="font-size:10px;margin-top:4px">Upload required to close case</div></div>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" style="font-size:12px" onclick="uploadAfterPhoto()">📷 Upload After Repair Photo</button>
+          <span style="font-size:12px;color:var(--red-dark);margin-left:12px;font-weight:600">⚠ Required to mark as resolved</span>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Cost & Resource Tracking</div>
+        <div class="cost-grid">
+          <div class="cost-item"><div class="cost-val" style="color:var(--blue)">2h 15m</div><div class="cost-lbl">Time Elapsed</div></div>
+          <div class="cost-item"><div class="cost-val" style="color:var(--teal)">~405 L</div><div class="cost-lbl">Est. Water Lost</div></div>
+          <div class="cost-item"><div class="cost-val" style="color:var(--amber)">₹6,200</div><div class="cost-lbl">Est. Cost So Far</div></div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Activity Logbook</div>
+        <div class="logbook">
+          <div class="log-entry">
+            <div class="log-dot" style="background:var(--blue)"></div>
+            <div class="log-body">
+              <div class="log-action">Case assigned to Team A</div>
+              <div class="log-meta">By: Supervisor Mohan Rao • 10:45 AM</div>
+            </div>
+          </div>
+          <div class="log-entry">
+            <div class="log-dot" style="background:var(--teal)"></div>
+            <div class="log-body">
+              <div class="log-action">Team A arrived on site</div>
+              <div class="log-meta">Confirmed by GPS check-in • 11:02 AM</div>
+            </div>
+          </div>
+          <div class="log-entry">
+            <div class="log-dot" style="background:var(--amber)"></div>
+            <div class="log-body">
+              <div class="log-action">Pipe section identified. 2m excavation required</div>
+              <div class="log-meta">Field report by Team A Lead • 11:18 AM</div>
+            </div>
+          </div>
+          <div class="log-entry">
+            <div class="log-dot" style="background:var(--gray-300)"></div>
+            <div class="log-body">
+              <div class="log-action">Repair in progress — awaiting completion</div>
+              <div class="log-meta">Auto-logged by system • Ongoing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+      <button class="btn btn-danger" onclick="showToast('🚨 Escalation sent to senior engineer!');closeModal()">🚨 Escalate</button>
+      <button class="btn btn-success" onclick="markResolved()">✅ Mark Resolved</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✅</span>
+  <span id="toast-msg">Action completed</span>
+</div>
+
+<script>
+// Page Navigation
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const tabs = {'dashboard':0,'report':1,'authority':2,'logbook':3,'alerts':4};
+  document.querySelectorAll('.nav-tab')[tabs[name]].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// Toast
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Role Toggle
+let isAuthority = false;
+function toggleRole() {
+  isAuthority = !isAuthority;
+  document.getElementById('role-label').textContent = isAuthority ? 'Citizen' : 'Authority';
+  showToast(isAuthority ? '🛠 Switched to Authority mode' : '👤 Switched to Citizen mode');
+}
+
+// Severity Selection
+function selectSeverity(el) {
+  document.querySelectorAll('.sev-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// Filter buttons
+function setFilter(el, type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  showToast('🔍 Filtering by: ' + (type === 'all' ? 'All Cases' : type.charAt(0).toUpperCase()+type.slice(1)));
+}
+
+// Simulated photo upload
+const mockImages = [
+  'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect fill="#1a3a4a" width="200" height="150"/><rect fill="#3a4a5a" y="80" width="200" height="40"/><ellipse cx="100" cy="105" rx="45" ry="12" fill="rgba(14,165,233,.5)"/><path d="M100 75 Q95 85 100 90 Q105 95 100 105" stroke="rgba(14,165,233,.9)" stroke-width="3" fill="none"/><path d="M85 88 Q95 90 100 88" stroke="#2a3a4a" stroke-width="2" fill="none"/></svg>`),
+  'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect fill="#2a3a2a" width="200" height="150"/><rect fill="#3a4a3a" y="90" width="200" height="60"/><ellipse cx="80" cy="110" rx="35" ry="10" fill="rgba(14,165,233,.45)"/><rect fill="#4a5a4a" y="60" x="0" width="200" height="35"/><circle cx="120" cy="75" r="8" fill="rgba(14,165,233,.7)"/></svg>`),
+];
+let uploadCount = 0;
+function simulateUpload() {
+  if(uploadCount >= 2) { showToast('⚠ Maximum 5 photos. Remove one to add more.'); return; }
+  const prev = document.getElementById('upload-previews');
+  const idx = uploadCount % mockImages.length;
+  const card = document.createElement('div');
+  card.className = 'preview-card';
+  card.innerHTML = `<img src="${mockImages[idx]}" alt="Leak photo ${uploadCount+1}"><button class="preview-remove" onclick="this.parentNode.remove();uploadCount--;resetAI()">✕</button>`;
+  prev.appendChild(card);
+  uploadCount++;
+  if(uploadCount >= 1) runAIVerification();
+  showToast('📷 Photo uploaded successfully!');
+}
+
+// AI Verification
+function resetAI() {
+  document.getElementById('ai-status-msg').textContent = 'Upload images above to run AI verification.';
+  document.getElementById('ai-status-msg').style.display = '';
+  document.getElementById('ai-progress').style.display = 'none';
+  document.getElementById('ai-result').style.display = 'none';
+  document.getElementById('ai-checks').style.display = 'none';
+}
+function runAIVerification() {
+  const statusMsg = document.getElementById('ai-status-msg');
+  const progDiv = document.getElementById('ai-progress');
+  const bar = document.getElementById('ai-bar');
+  const step = document.getElementById('ai-step');
+  const pct = document.getElementById('ai-pct');
+  const result = document.getElementById('ai-result');
+  const checks = document.getElementById('ai-checks');
+
+  statusMsg.textContent = '🔍 Running AI verification...';
+  progDiv.style.display = 'block';
+  result.style.display = 'none';
+  checks.style.display = 'none';
+
+  const steps = ['Analyzing metadata...', 'Detecting GAN artifacts...', 'Compression analysis...', 'GPS verification...', 'Duplicate check...', 'Final assessment...'];
+  let p = 0;
+  const interval = setInterval(() => {
+    p += 17;
+    bar.style.width = Math.min(p,100)+'%';
+    step.textContent = steps[Math.floor(p/17)] || 'Complete';
+    pct.textContent = Math.min(p,100)+'%';
+    if(p >= 100) {
+      clearInterval(interval);
+      setTimeout(() => {
+        progDiv.style.display = 'none';
+        statusMsg.style.display = 'none';
+        result.style.display = 'flex';
+        checks.style.display = 'block';
+        showToast('✅ AI verification passed — images authentic!');
+      }, 300);
+    }
+  }, 260);
+}
+
+// Modals
+function openModal(type) {
+  document.getElementById('case-modal').classList.add('open');
+}
+function openCaseModal(caseId) {
+  const cases = {
+    'case1': ['Case #WL-047 — Torwa Main Road', 'Near Water Tank No.3 • Reported 2 min ago'],
+    'case2': ['Case #WL-046 — Civil Lines Junction', 'Opposite Collector Office • Reported 1 hour ago'],
+    'case3': ['Case #WL-045 — Koni Sector B', 'Near School Gate, Lane 4 • Reported 3 hours ago'],
+    'case4': ['Case #WL-044 — Gol Bazaar', 'Main Street, Near Market Square • RESOLVED'],
+    'leak1': ['Case #WL-047 — Torwa Main Road', 'Critical leak detected • 2 min ago'],
+    'leak2': ['Case #WL-045 — Gol Bazaar', 'Medium severity • Active'],
+  };
+  const c = cases[caseId] || cases['case2'];
+  document.getElementById('modal-case-title').textContent = c[0];
+  document.getElementById('modal-case-sub').textContent = c[1];
+  document.getElementById('case-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('case-modal').classList.remove('open');
+}
+document.getElementById('case-modal').addEventListener('click', function(e) {
+  if(e.target === this) closeModal();
+});
+
+// Upload after photo
+function uploadAfterPhoto() {
+  const box = document.getElementById('modal-after-img');
+  const svgData = `<svg xmlns="http://www.w3.org/20x00/svg" width="200" height="150" viewBox="0 0 200 150"><rect fill="#1a2a1a" width="200" height="150"/><rect fill="#2a3a2a" y="80" width="200" height="70"/><rect fill="#3a4a3a" y="80" width="200" height="5"/><line x1="0" y1="83" x2="200" y2="83" stroke="#4a5a4a" stroke-width="1"/></svg>`;
+  box.innerHTML = `<img src="data:image/svg+xml,${encodeURIComponent(svgData)}" style="width:100%;height:100%;object-fit:cover"><div class="img-label" style="background:rgba(34,197,94,.8)">After Repair ✓</div>`;
+  showToast('📷 After photo uploaded! Repair can now be marked resolved.');
+}
+
+// Mark resolved
+function markResolved() {
+  closeModal();
+  showToast('✅ Case marked as resolved! Logbook entry created.');
+}
+
+// Submit report
+function submitReport() {
+  const area = document.getElementById('sel-area').value;
+  const street = document.getElementById('inp-street').value;
+  if(!area) { showToast('⚠ Please select an area first'); return; }
+  showToast('✅ Leak report submitted! Case #WL-048 created. Team notified.');
+  setTimeout(() => showPage('dashboard'), 1500);
+}
+
+// Animate sensor bars on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.supply-fill, .sensor-fill').forEach(el => {
+    const w = el.style.width;
+    el.style.width = '0';
+    setTimeout(() => el.style.width = w, 100);
+  });
+});
+</script>
+</body>
+</html>

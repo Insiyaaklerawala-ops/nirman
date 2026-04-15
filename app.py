@@ -1,5 +1,7 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import os
+
 from utils.database import (
     save_leak,
     load_leaks,
@@ -47,28 +49,26 @@ st.markdown("""
 # ---------------------------
 st.sidebar.title("💧 Water Platform")
 menu = st.sidebar.selectbox("Menu", [
+    "Dashboard (Advanced UI)",
     "Water Supply",
     "Report Leak",
-    "View Leaks",
-    "Repair Logbook",
-    "Live Map & Alerts"
+    "Live Map & Alerts",
+    "Repair Logbook"
 ])
 
 # ---------------------------
-# 🏠 DASHBOARD
+# 🏠 DASHBOARD (HTML UI)
 # ---------------------------
-if menu == "Dashboard":
+if menu == "Dashboard (Advanced UI)":
     st.title("💧 Smart Water Monitoring System")
 
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("Total Leaks", "24")
-    col2.metric("Repairs Completed", "18")
-    col3.metric("Water Saved", "1200 L")
-
-    st.markdown("### 📊 System Overview")
-
-    st.info("Track leaks, monitor supply, and ensure transparency in water management.")
+    # Load and render full HTML UI
+    try:
+        with open("nirman.html", "r", encoding="utf-8") as f:
+            html_code = f.read()
+        components.html(html_code, height=1000, scrolling=True)
+    except FileNotFoundError:
+        st.error("nirman.html file not found. Make sure it's in the same folder as app.py")
 
 # ---------------------------
 # 💧 WATER SUPPLY UI
@@ -104,6 +104,7 @@ elif menu == "Report Leak":
 
     if st.button("Submit Report"):
         if location and image:
+            os.makedirs("assets/uploads", exist_ok=True)
             path = f"assets/uploads/{image.name}"
 
             with open(path, "wb") as f:
@@ -117,12 +118,12 @@ elif menu == "Report Leak":
                 st.success(f"✅ Verified ({result['confidence']}%)")
                 save_leak(location, path)
             else:
-                st.error(f"❌ Rejected: {result['message']} ({result['confidence']}%")
+                st.error(f"❌ Rejected: {result['message']} ({result['confidence']}%)")
         else:
             st.warning("Please fill all fields")
 
 # ---------------------------
-# 📊 VIEW LEAKS UI
+# 🗺️ LIVE MAP & ALERTS
 # ---------------------------
 elif menu == "Live Map & Alerts":
     st.header("🗺️ Live Monitoring Dashboard")
@@ -147,7 +148,6 @@ elif menu == "Live Map & Alerts":
 
     col2.metric("Avg Repair Time (hrs)", repair_time)
     col2.metric("Estimated Cost (₹)", cost)
-    leaks = load_leaks()
 
     if not leaks:
         st.info("No leaks reported yet")
@@ -179,6 +179,8 @@ elif menu == "Repair Logbook":
 
         if before and after:
 
+            os.makedirs("assets/uploads", exist_ok=True)
+
             before_path = f"assets/uploads/{before.name}"
             after_path = f"assets/uploads/{after.name}"
 
@@ -201,35 +203,6 @@ elif menu == "Repair Logbook":
         else:
             st.warning("Please upload BOTH before and after images!")
 
-# ---------------------------
-# 🗺️ LIVE MAP & ALERTS
-# ---------------------------
-# ---------------------------
-# 🗺️ LIVE MAP & ALERTS
-# ---------------------------
-elif menu == "Live Map & Alerts":
-    st.header("🗺️ Live Monitoring Dashboard")
-
-    leaks = load_leaks()
-
-    st.subheader("📍 Leak Locations")
-    show_map(leaks)
-
-    st.subheader("🚨 Alerts")
-    if st.button("Generate Alert"):
-        st.warning(generate_alert())
-
-    st.subheader("📊 Analytics")
-
-    total, water_loss, repair_time, cost = calculate_metrics(leaks)
-
-    col1, col2 = st.columns(2)
-
-    col1.metric("Total Leaks", total)
-    col1.metric("Water Loss (Liters)", water_loss)
-
-    col2.metric("Avg Repair Time (hrs)", repair_time)
-    col2.metric("Estimated Cost (₹)", cost)
 # ---------------------------
 # 📢 FOOTER
 # ---------------------------
