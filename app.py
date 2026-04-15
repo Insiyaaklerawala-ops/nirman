@@ -113,17 +113,11 @@ elif menu == "Report Leak":
 
             result = verify_image(path)
 
-            if result:
-                st.success("✅ Leak reported successfully!")
-                st.markdown(f"""
-                <div class="card">
-                    <b>Location:</b> {location} <br>
-                    <b>Severity:</b> {severity}
-                </div>
-                """, unsafe_allow_html=True)
+            if result["is_valid"]:
+                st.success(f"✅ Verified ({result['confidence']}%)")
+                save_leak(location, path)
             else:
-                st.error("❌ Fake or AI-generated image detected!")
-
+                st.error(f"❌ Rejected: {result['message']} ({result['confidence']}%")
         else:
             st.warning("Please fill all fields")
 
@@ -188,25 +182,20 @@ elif menu == "Repair Logbook":
             st.warning("Please upload BOTH before and after images!")
 
 # ---------------------------
-# 📢 FOOTER
+# 🗺️ LIVE MAP & ALERTS
 # ---------------------------
-st.markdown("---")
-st.caption("Built for Smart City Water Management 🚰")
 elif menu == "Live Map & Alerts":
 st.header("🗺️ Live Monitoring Dashboard")
 
     leaks = load_leaks()
 
-    # Map
     st.subheader("📍 Leak Locations")
     show_map(leaks)
 
-    # Alerts
     st.subheader("🚨 Alerts")
     if st.button("Generate Alert"):
         st.warning(generate_alert())
 
-    # Analytics
     st.subheader("📊 Analytics")
 
     total, water_loss, repair_time, cost = calculate_metrics(leaks)
@@ -218,3 +207,9 @@ st.header("🗺️ Live Monitoring Dashboard")
 
     col2.metric("Avg Repair Time (hrs)", repair_time)
     col2.metric("Estimated Cost (₹)", cost)
+
+# ---------------------------
+# 📢 FOOTER
+# ---------------------------
+st.markdown("---")
+st.caption("Built for Smart City Water Management 🚰")
