@@ -1,52 +1,56 @@
 import folium
 from streamlit_folium import st_folium
-import random
 
 # ---------------------------
-# 🗺️ MAP VIEW
+# 🗺️ MUMBAI MAP FUNCTION
 # ---------------------------
 def show_map(leaks):
-    m = folium.Map(location=[20.5937, 78.9629], zoom_start=5)
+    mumbai_coords = [19.0760, 72.8777]
 
+    # Create map
+    m = folium.Map(
+        location=mumbai_coords,
+        zoom_start=12,
+        tiles="CartoDB positron"
+    )
+
+    # If no leaks → show base marker
+    if not leaks:
+        folium.Marker(
+            mumbai_coords,
+            tooltip="Mumbai City Center",
+            icon=folium.Icon(color="blue")
+        ).add_to(m)
+
+    # Add leak markers
     for leak in leaks:
-        lat = leak.get("lat", random.uniform(18, 28))
-        lon = leak.get("lon", random.uniform(70, 85))
+        lat = leak.get("lat", 19.0760)
+        lon = leak.get("lon", 72.8777)
 
         folium.Marker(
             location=[lat, lon],
-            popup=f"Leak at {leak['location']}",
-            icon=folium.Icon(color="red")
+            popup=f"Leak: {leak['location']}",
+            tooltip=leak['location'],
+            icon=folium.Icon(color="red", icon="tint")
         ).add_to(m)
 
-    st_folium(m, width=700)
+    st_folium(m, width=900, height=500)
 
 
 # ---------------------------
-# 🚨 SMART ALERT SYSTEM
+# 🚨 ALERT GENERATOR
 # ---------------------------
-def generate_alert(leaks):
-    if not leaks:
-        return "No active issues"
-
-    high_risk = [l for l in leaks if l.get("status") == "Pending"]
-
-    if len(high_risk) > 5:
-        return "🚨 Multiple leaks detected! Immediate action required"
-
-    return f"⚠️ {len(high_risk)} active leaks need attention"
+def generate_alert():
+    return "⚠️ Multiple leak reports detected! Immediate action required in affected zones."
 
 
 # ---------------------------
-# 📊 ANALYTICS
+# 📊 METRICS CALCULATION
 # ---------------------------
 def calculate_metrics(leaks):
     total = len(leaks)
-
-    if total == 0:
-        return 0, 0, 0, 0
-
-    water_loss = sum([random.randint(100, 300) for _ in leaks])
-    repair_time = sum([random.randint(2, 10) for _ in leaks]) / total
-    cost = water_loss * 2
+    water_loss = total * 50
+    repair_time = total * 2
+    cost = total * 1000
 
     return total, water_loss, repair_time, cost

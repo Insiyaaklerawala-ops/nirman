@@ -52,26 +52,26 @@ menu = st.sidebar.selectbox("Menu", [
     "Dashboard (Advanced UI)",
     "Water Supply",
     "Report Leak",
+    "View Leaks",   # ✅ ADDED
     "Live Map & Alerts",
     "Repair Logbook"
 ])
 
 # ---------------------------
-# 🏠 DASHBOARD (HTML UI)
+# 🏠 DASHBOARD
 # ---------------------------
 if menu == "Dashboard (Advanced UI)":
     st.title("💧 Smart Water Monitoring System")
 
-    # Load and render full HTML UI
     try:
         with open("nirman.html", "r", encoding="utf-8") as f:
             html_code = f.read()
         components.html(html_code, height=1000, scrolling=True)
     except FileNotFoundError:
-        st.error("nirman.html file not found. Make sure it's in the same folder as app.py")
+        st.error("nirman.html file not found.")
 
 # ---------------------------
-# 💧 WATER SUPPLY UI
+# 💧 WATER SUPPLY
 # ---------------------------
 elif menu == "Water Supply":
     st.header("📍 Water Supply Schedule")
@@ -86,7 +86,7 @@ elif menu == "Water Supply":
             st.error("Please enter a location")
 
 # ---------------------------
-# 🚨 REPORT LEAK UI
+# 🚨 REPORT LEAK
 # ---------------------------
 elif menu == "Report Leak":
     st.header("🚨 Report a Water Leak")
@@ -97,8 +97,11 @@ elif menu == "Report Leak":
         location = st.text_input("📍 Enter Leak Location")
         severity = st.selectbox("⚠️ Severity", ["Low", "Medium", "High"])
 
+        lat = st.number_input("Latitude", value=19.0760)
+        lon = st.number_input("Longitude", value=72.8777)
+
     with col2:
-        image = st.file_uploader("📷 Upload Leak Image", type=["jpg", "png"])
+        image = st.file_uploader("📷 Upload Leak Image", type=["jpg", "png", "jpeg"])
 
     st.markdown("---")
 
@@ -116,11 +119,37 @@ elif menu == "Report Leak":
 
             if result["is_valid"]:
                 st.success(f"✅ Verified ({result['confidence']}%)")
-                save_leak(location, path)
+                save_leak(location, path, lat, lon)
             else:
                 st.error(f"❌ Rejected: {result['message']} ({result['confidence']}%)")
         else:
             st.warning("Please fill all fields")
+
+# ---------------------------
+# 📋 VIEW LEAKS (🔥 FIXED SECTION)
+# ---------------------------
+elif menu == "View Leaks":
+    st.header("📋 Reported Leaks")
+
+    leaks = load_leaks()
+
+    # ✅ SHOW MUMBAI MAP HERE
+    st.subheader("🗺️ Leak Map (Mumbai)")
+    show_map(leaks)
+
+    st.markdown("---")
+
+    if not leaks:
+        st.info("No leaks reported yet")
+    else:
+        for leak in leaks:
+            st.markdown(f"""
+            <div class="card">
+                📍 <b>{leak['location']}</b>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.image(leak["image"], use_column_width=True)
 
 # ---------------------------
 # 🗺️ LIVE MAP & ALERTS
@@ -149,20 +178,8 @@ elif menu == "Live Map & Alerts":
     col2.metric("Avg Repair Time (hrs)", repair_time)
     col2.metric("Estimated Cost (₹)", cost)
 
-    if not leaks:
-        st.info("No leaks reported yet")
-    else:
-        for leak in leaks:
-            st.markdown(f"""
-            <div class="card">
-                📍 <b>{leak['location']}</b>
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.image(leak["image"], use_column_width=True)
-
 # ---------------------------
-# 🛠️ REPAIR LOGBOOK UI
+# 🛠️ REPAIR LOGBOOK
 # ---------------------------
 elif menu == "Repair Logbook":
     st.header("🛠️ Repair Logbook")
@@ -178,7 +195,6 @@ elif menu == "Repair Logbook":
     if st.button("Submit Repair"):
 
         if before and after:
-
             os.makedirs("assets/uploads", exist_ok=True)
 
             before_path = f"assets/uploads/{before.name}"
@@ -199,7 +215,6 @@ elif menu == "Repair Logbook":
             )
 
             st.success("Repair logged successfully!")
-
         else:
             st.warning("Please upload BOTH before and after images!")
 
