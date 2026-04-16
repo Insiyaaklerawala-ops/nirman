@@ -30,7 +30,7 @@ def save_leak(location, image, lat=None, lon=None):
     new_leak = {
         "id": len(leaks) + 1,
         "location": location,
-        "image": image,
+        "image": image,   # ✅ FIXED (use passed value)
         "lat": lat,
         "lon": lon,
         "status": "Pending",
@@ -65,7 +65,6 @@ def save_repair(leak_id, before_img, after_img, cost, water_loss):
     repairs.append(repair_entry)
     save_data(REPAIR_FILE, repairs)
 
-    # ALSO UPDATE LEAK STATUS
     update_leak_status(leak_id, "Repaired")
 
 # ---------------------------

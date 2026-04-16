@@ -420,8 +420,9 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
       <label>PASSWORD</label>
       <input type="password" id="signin-password" placeholder="••••••••">
     </div>
-    <button class="signin-btn" id="signin-btn" onclick="doSignIn()">Sign In →</button>
-
+   <button class="signin-btn" id="signin-btn" onclick="doSignIn()">
+    Sign In →
+</button>
     <div class="demo-credentials">
       <p>DEMO CREDENTIALS</p>
       <div class="demo-row"><span>Citizen login</span><span>citizen@aquawatch.in / demo123</span></div>
@@ -1679,6 +1680,198 @@ function animateBars() {
 // ============================================================
 document.getElementById('signin-password').addEventListener('keydown', e => { if (e.key === 'Enter') doSignIn(); });
 document.getElementById('signin-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('signin-password').focus(); });
+</script>
+<script>
+function submitLeak() {
+    let formData = new FormData();
+
+    formData.append("location", document.getElementById("inp-street").value);
+    formData.append("image", document.getElementById("image").files[0]);
+
+    fetch("/report_leak", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("✅ Leak reported! Confidence: " + data.confidence);
+        } else {
+            alert("❌ " + data.message);
+        }
+    });
+}
+</script>
+<script>
+let currentRole = null;
+
+function selectRole(role) {
+    currentRole = role;
+
+    document.getElementById("role-citizen").classList.remove("selected");
+    document.getElementById("role-official").classList.remove("selected");
+
+    document.getElementById("role-" + role).classList.add("selected");
+}
+
+function doSignIn() {
+    let email = document.getElementById("signin-email").value;
+
+    if (!currentRole) {
+        alert("Select role first");
+        return;
+    }
+
+    if (
+        (currentRole === "citizen" && email === "citizen@aquawatch.in") ||
+        (currentRole === "official" && email === "official@gov.in")
+    ) {
+        document.getElementById("signin-portal").style.display = "none";
+        document.getElementById("app-wrapper").style.display = "block";
+    } else {
+        alert("Invalid credentials");
+    }
+}
+
+function doSignOut() {
+    location.reload();
+}
+</script>
+<script>
+function showPage(page) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("page-" + page).classList.add("active");
+
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    document.getElementById("tab-" + page).classList.add("active");
+}
+</script>
+<script>
+let currentRole = null;
+
+function selectRole(role) {
+    currentRole = role;
+
+    document.getElementById("role-citizen").classList.remove("selected");
+    document.getElementById("role-official").classList.remove("selected");
+
+    document.getElementById("role-" + role).classList.add("selected");
+}
+
+function doSignIn() {
+    let email = document.getElementById("signin-email").value;
+
+    if (!currentRole) {
+        alert("Select role first");
+        return;
+    }
+
+    if (
+        (currentRole === "citizen" && email === "citizen@aquawatch.in") ||
+        (currentRole === "official" && email === "official@gov.in")
+    ) {
+        document.getElementById("signin-portal").style.display = "none";
+        document.getElementById("app-wrapper").style.display = "block";
+    } else {
+        alert("Invalid credentials");
+    }
+}
+
+function doSignOut() {
+    location.reload();
+}
+
+function showPage(page) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("page-" + page).classList.add("active");
+
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    document.getElementById("tab-" + page).classList.add("active");
+}
+<script>
+function submitLeak() {
+    let formData = new FormData();
+
+    formData.append("location",
+        document.getElementById("inp-street").value);
+
+    formData.append("image",
+        document.getElementById("image").files[0]);
+
+    fetch("/report_leak", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("✅ Leak reported! Confidence: " + data.confidence);
+        } else {
+            alert("❌ " + data.message);
+        }
+    });
+}
+</script>
+<script>
+let currentRole = null;
+
+function selectRole(role) {
+    currentRole = role;
+    document.getElementById("role-citizen").classList.remove("selected");
+    document.getElementById("role-official").classList.remove("selected");
+    document.getElementById("role-" + role).classList.add("selected");
+}
+
+function doSignIn() {
+    let email = document.getElementById("signin-email").value;
+
+    if (!currentRole) {
+        alert("Select role first");
+        return;
+    }
+
+    if (
+        (currentRole === "citizen" && email === "citizen@aquawatch.in") ||
+        (currentRole === "official" && email === "official@gov.in")
+    ) {
+        document.getElementById("signin-portal").style.display = "none";
+        document.getElementById("app-wrapper").style.display = "block";
+    } else {
+        alert("Invalid credentials");
+    }
+}
+
+function doSignOut() {
+    location.reload();
+}
+
+function showPage(page) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("page-" + page).classList.add("active");
+}
+
+function submitLeak() {
+    let formData = new FormData();
+
+    formData.append("location",
+        document.getElementById("inp-street").value);
+
+    formData.append("image",
+        document.getElementById("image").files[0]);
+
+    fetch("/report_leak", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("✅ Leak reported! Confidence: " + data.confidence);
+        } else {
+            alert("❌ " + data.message);
+        }
+    });
+}
 </script>
 </body>
 </html>
