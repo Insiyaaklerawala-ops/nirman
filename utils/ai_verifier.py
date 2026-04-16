@@ -1,76 +1,38 @@
-import os
-import random
-import cv2
+import requests
+
+API_KEY = "+NgfqvH/wjmqI9jUPDeQA=="
 
 def verify_image(path):
-    result = {
-        "is_valid": False,
-        "confidence": 0,
-        "message": ""
-    }
+    try:
+        url = "https://api.thehive.ai/api/v2/task/sync"
 
-    # --------------------------
-    # 1. FILE TYPE CHECK
-    # --------------------------
-    if not path.endswith((".png", ".jpg", ".jpeg")):
-        result["message"] = "Invalid file type"
-        return result
+        files = {"image": open(path, "rb")}
+        headers = {"Authorization": f"Token {API_KEY}"}
 
-    # --------------------------
-    # 2. FILE SIZE CHECK
-    # --------------------------
-    size = os.path.getsize(path)
+        response = requests.post(url, files=files, headers=headers)
+        result = response.json()
 
-    if size < 5000:
-        result["message"] = "Image too small / suspicious"
-        return result
+        score = result["status"][0]["response"]["output"][0]["classes"][0]["score"]
 
-    # --------------------------
-    # 3. LOAD IMAGE (OpenCV)
-    # --------------------------
-    img = cv2.imread(path)
+        if score < 0.5:
+            return {
+                "status": "success",
+                "is_valid": True,
+                "confidence": int((1 - score) * 100),
+                "message": "✅ Real image detected"
+            }
+        else:
+            return {
+                "status": "success",
+                "is_valid": False,
+                "confidence": int(score * 100),
+                "message": "❌ AI-generated / fake image"
+            }
 
-    if img is None:
-        result["message"] = "Corrupted image"
-        return result
-
-    # --------------------------
-    # 4. BASIC IMAGE ANALYSIS
-    # --------------------------
-
-    # Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Detect edges
-    edges = cv2.Canny(gray, 50, 150)
-
-    edge_count = edges.sum()
-
-    # --------------------------
-    # 5. FAKE VS REAL HEURISTIC
-    # --------------------------
-
-    # If too smooth → suspicious
-    if edge_count < 50000:
-        result["confidence"] = random.randint(30, 60)
-        result["message"] = "Low detail image (possibly fake)"
-        result["is_valid"] = False
-        return result
-
-    # Otherwise more likely real
-    result["confidence"] = random.randint(70, 95)
-    result["message"] = "Image looks genuine"
-    result["is_valid"] = True
-    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-
-    if laplacian_var < 50:
-       result["message"] = "Blurry image"
-       result["is_valid"] = False
-       return result
-
-
-
-if __name__ == "__main__":
-    test_path = "test.jpg"   # put any image here
-    result = verify_image(test_path)
-    print(result)
+    except Exception as e:
+        print(e)
+        return {
+            "status": "error",
+            "confidence": 0,
+            "message": "AI detection failed"
+        }

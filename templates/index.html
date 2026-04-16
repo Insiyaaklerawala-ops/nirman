@@ -186,7 +186,9 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 .sev-desc { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
 
 /* image upload */
-.upload-zone { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 32px; text-align: center; cursor: pointer; transition: all .2s; background: var(--gray-50); }
+.upload-zone {
+  display: none !important;
+}
 .upload-zone:hover { border-color: var(--blue); background: var(--blue-light); }
 .upload-icon { font-size: 36px; margin-bottom: 10px; }
 .upload-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
@@ -425,8 +427,8 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 </button>
     <div class="demo-credentials">
       <p>DEMO CREDENTIALS</p>
-      <div class="demo-row"><span>Citizen login</span><span>citizen@ / demo123</span></div>
-      <div class="demo-row"><span>Official login</span><span>official@ / admin123</span></div>
+      <div class="demo-row"><span>Citizen login</span><span>citizen@aquawatch.in / demo123</span></div>
+      <div class="demo-row"><span>Official login</span><span>official@gov.in / admin123</span></div>
     </div>
   </div>
 </div>
@@ -467,7 +469,7 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
     </div>
     <div class="dash-cards">
       <div class="stat-card"><div class="icon icon-red">🚨</div><div class="label">Active Leaks</div><div class="value" style="color:var(--red)">12</div><div class="trend down">↑ 3 new today</div></div>
-      <div class="stat-card"><div class="icon icon-teal">💧</div><div class="label">Water Saved</div><div class="value" style="color:var(--teal)">89K L</div><div class="trend up">↑ 18% this month</div></div>
+      <div class="stat-card"><div class="icon icon-teal">💧</div><div class="label">Water Saved</div><div class="value" style="color:var(--teal)">89 KL</div><div class="trend up">↑ 18% this month</div></div>
       <div class="stat-card"><div class="icon icon-blue">⚡</div><div class="label">Avg Response</div><div class="value" style="color:var(--blue)">2.4h</div><div class="trend up">↓ 0.4h improved</div></div>
       <div class="stat-card"><div class="icon icon-amber">🛠</div><div class="label">Teams Active</div><div class="value" style="color:var(--amber)">4</div><div class="trend">All deployed</div></div>
     </div>
@@ -679,13 +681,12 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
         </div>
         <div class="form-section">
           <div class="form-section-title">📷 Photo Evidence <span style="font-size:12px;background:var(--red-light);color:var(--red-dark);padding:2px 8px;border-radius:8px;font-weight:600">Required</span></div>
+          <input type="file" id="imageInput" accept="image/*">
           <div class="form-section-sub">Upload clear photos of the leak. AI will verify authenticity automatically.</div>
           <div class="upload-zone" onclick="simulateUpload()">
             <div class="upload-icon">📸</div>
             <div class="upload-title">Click to upload or drag & drop</div>
-            <div class="upload-sub">JPG, PNG, HEIC supported • Max 10MB each • Up to 5 photos</div>
-            <button class="btn btn-secondary" style="margin-top:14px;font-size:12px" onclick="event.stopPropagation();simulateUpload()">📂 Browse Files</button>
-          </div>
+
           <div class="upload-previews" id="upload-previews"></div>
         </div>
         <div class="form-section">
@@ -716,6 +717,7 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
           </div>
         </div>
         <div class="form-actions">
+          <button onclick="submitLeak()" class="btn btn-primary"> 🚀 Submit Leak</button>
           <button class="btn btn-secondary" onclick="showPage('dashboard')">← Back</button>
           <button class="btn btn-primary" onclick="submitReport()">📤 Submit Leak Report →</button>
         </div>
@@ -807,7 +809,7 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
           <div class="stat-card"><div class="label">Total Cases</div><div class="value">47</div></div>
           <div class="stat-card"><div class="label">Avg Response Time</div><div class="value" style="color:var(--blue)">2.4h</div></div>
-          <div class="stat-card"><div class="label">Water Saved (Today)</div><div class="value" style="color:var(--teal)">12K L</div></div>
+          <div class="stat-card"><div class="label">Water Saved (Today)</div><div class="value" style="color:var(--teal)">12KL</div></div>
           <div class="stat-card"><div class="label">Cost This Month</div><div class="value" style="color:var(--amber)">₹2.1L</div></div>
         </div>
 
@@ -1255,8 +1257,8 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 let currentRole = null; // 'citizen' | 'official'
 let currentUser = '';
 
-const CITIZEN_CREDS = { email: 'citizen@', password: 'demo123' };
-const OFFICIAL_CREDS = { email: 'official@', password: 'admin123' };
+const CITIZEN_CREDS = { email: 'citizen@aquawatch.in', password: 'demo123' };
+const OFFICIAL_CREDS = { email: 'official@gov.in', password: 'admin123' };
 
 // ============================================================
 // SIGN-IN
@@ -1871,6 +1873,40 @@ function submitLeak() {
             alert("❌ " + data.message);
         }
     });
+}
+</script>
+<script>
+async function submitLeak() {
+    const location = document.getElementById("inp-street").value;
+    const fileInput = document.getElementById("imageInput");
+
+    if (!location || fileInput.files.length === 0) {
+        alert("Please fill location and select image");
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append("location", location);
+    formData.append("image", fileInput.files[0]);
+
+    try {
+        const response = await fetch("/report_leak", {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            alert("✅ Leak reported! Confidence: " + result.confidence + "%");
+        } else {
+            alert("❌ " + result.message);
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("Server error");
+    }
 }
 </script>
 </body>
