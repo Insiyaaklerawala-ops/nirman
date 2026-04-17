@@ -797,14 +797,14 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
         <div class="auth-toolbar">
           <div class="auth-toolbar-title">🛠 Authority Repair Panel</div>
           <div class="filter-group">
-            <button class="filter-btn active" onclick="setFilter(this,'all')">All Cases</button>
-            <button class="filter-btn" onclick="setFilter(this,'new')">New</button>
-            <button class="filter-btn" onclick="setFilter(this,'assigned')">Assigned</button>
-            <button class="filter-btn" onclick="setFilter(this,'progress')">In Progress</button>
-            <button class="filter-btn" onclick="setFilter(this,'resolved')">Resolved</button>
+            <button onclick="filterCases('all')">All Cases</button>
+            <button onclick="filterCases('new')">New</button>
+            <button onclick="filterCases('assigned')">Assigned</button>
+            <button onclick="filterCases('progress')">In Progress</button> 
+            <button onclick="filterCases('resolved')">Resolved</button>
           </div>
           <button class="btn btn-danger" style="font-size:13px" onclick="dispatchEmergency()">🚨 Emergency Dispatch</button>
-          <button class="btn btn-primary" style="font-size:13px" onclick="showToast('📊 Generating report...')">📊 Export Report</button>
+          <button onclick="exportCSV()">Export Report</button>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
@@ -1257,6 +1257,35 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 // ============================================================
 let currentRole = null; // 'citizen' | 'official'
 let currentUser = '';
+let cases = [
+  {
+    id: "#WL-047",
+    location: "Torwa Main Road",
+    sub: "Near Water Tank No.3",
+    status: "new",
+    priority: "critical",
+    reported: "2 min ago",
+    assigned: "Unassigned"
+  },
+  {
+    id: "#WL-046",
+    location: "Civil Lines Junction",
+    sub: "Opp. Collector Office",
+    status: "progress",
+    priority: "high",
+    reported: "1 hr ago",
+    assigned: "Team A"
+  },
+  {
+    id: "#WL-045",
+    location: "Koni Sector B",
+    sub: "Near School Gate",
+    status: "assigned",
+    priority: "medium",
+    reported: "3 hrs ago",
+    assigned: "Team C"
+  }
+];
 
 const CITIZEN_CREDS = { email: 'citizen@aquawatch.in', password: 'demo123' };
 const OFFICIAL_CREDS = { email: 'official@gov.in', password: 'admin123' };
@@ -1677,6 +1706,61 @@ function animateBars() {
     setTimeout(() => el.style.width = w, 100);
   });
 }
+function renderCases(filter = "all") {
+  const table = document.querySelector(".cases-table");
+  
+  let rows = cases
+    .filter(c => filter === "all" || c.status === filter)
+    .map(c => `
+      <div class="table-row">
+        <div class="case-id">${c.id}</div>
+        <div>
+          <div class="case-loc">${c.location}</div>
+          <div class="case-sub">${c.sub}</div>
+        </div>
+        <div class="status-pill status-${c.status}">${c.status}</div>
+        <div>${c.priority}</div>
+        <div>${c.reported}</div>
+        <div>${c.assigned}</div>
+        <div>
+          <button onclick="assignCase('${c.id}')">Assign</button>
+        </div>
+      </div>
+    `).join("");
+
+  table.innerHTML = `
+    <div class="table-header">
+      <div>ID</div><div>Location</div><div>Status</div>
+      <div>Priority</div><div>Reported</div><div>Assigned</div><div>Action</div>
+    </div>
+    ${rows}
+  `;
+}
+function filterCases(type) {
+  renderCases(type);
+}
+function assignCase(id) {
+  let caseItem = cases.find(c => c.id === id);
+  caseItem.status = "assigned";
+  caseItem.assigned = "Team X";
+
+  renderCases();
+}
+function exportCSV() {
+  let csv = "ID,Location,Status,Priority,Reported,Assigned\n";
+
+  cases.forEach(c => {
+    csv += `${c.id},${c.location},${c.status},${c.priority},${c.reported},${c.assigned}\n`;
+  });
+
+  let blob = new Blob([csv], { type: "text/csv" });
+  let url = URL.createObjectURL(blob);
+
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "water_leaks_report.csv";
+  a.click();
+}
 
 // ============================================================
 // KEYBOARD
@@ -1909,6 +1993,8 @@ async function submitLeak() {
         alert("Server error");
     }
 }
+
 </script>
+
 </body>
 </html>
