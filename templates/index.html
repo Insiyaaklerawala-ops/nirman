@@ -686,8 +686,10 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 
   <input type="file" id="imageInput" accept="image/*">
 
-          <div class="upload-previews" id="upload-previews"></div>
-        </div>
+  <div class="form-section-sub">
+    Upload clear photos of the leak.
+  </div>
+</div>
         <div class="form-section">
           <div class="form-section-title">🤖 AI Image Verification</div>
           <div class="form-section-sub">Our AI checks for fake or manipulated images to ensure reports are genuine.</div>
@@ -795,14 +797,14 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
         <div class="auth-toolbar">
           <div class="auth-toolbar-title">🛠 Authority Repair Panel</div>
           <div class="filter-group">
-           <button onclick="filterCases('all')">All Cases</button>
-<button onclick="filterCases('new')">New</button>
-<button onclick="filterCases('assigned')">Assigned</button>
-<button onclick="filterCases('progress')">In Progress</button>
-<button onclick="filterCases('resolved')">Resolved</button>
+            <button class="filter-btn active" onclick="setFilter(this,'all')">All Cases</button>
+            <button class="filter-btn" onclick="setFilter(this,'new')">New</button>
+            <button class="filter-btn" onclick="setFilter(this,'assigned')">Assigned</button>
+            <button class="filter-btn" onclick="setFilter(this,'progress')">In Progress</button>
+            <button class="filter-btn" onclick="setFilter(this,'resolved')">Resolved</button>
           </div>
           <button class="btn btn-danger" style="font-size:13px" onclick="dispatchEmergency()">🚨 Emergency Dispatch</button>
-          <button onclick="exportCSV()">Export Report</button>
+          <button class="btn btn-primary" style="font-size:13px" onclick="showToast('📊 Generating report...')">📊 Export Report</button>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
@@ -812,7 +814,56 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
           <div class="stat-card"><div class="label">Cost This Month</div><div class="value" style="color:var(--amber)">₹2.1L</div></div>
         </div>
 
-        <div class="cases-table" id="casesTable"></div>
+        <div class="cases-table">
+          <div class="table-header">
+            <div>ID</div><div>Location</div><div>Status</div><div>Priority</div><div>Reported</div><div>Assigned To</div><div>Action</div>
+          </div>
+          <div class="table-row" onclick="openCaseModal('case1')">
+            <div class="case-id">#WL-047</div>
+            <div><div class="case-loc">Torwa Main Road</div><div class="case-sub">Near Water Tank No.3</div></div>
+            <div><span class="status-pill status-new">New</span></div>
+            <div><span class="priority-dot p-high"></span>Critical</div>
+            <div style="font-size:12px;color:var(--gray-500)">2 min ago</div>
+            <div style="font-size:12px;color:var(--gray-400)">Unassigned</div>
+            <div><button class="btn btn-primary" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();assignTeam('WL-047')">Assign</button></div>
+          </div>
+          <div class="table-row" onclick="openCaseModal('case2')">
+            <div class="case-id">#WL-046</div>
+            <div><div class="case-loc">Civil Lines Junction</div><div class="case-sub">Opp. Collector Office</div></div>
+            <div><span class="status-pill status-progress">In Progress</span></div>
+            <div><span class="priority-dot p-high"></span>High</div>
+            <div style="font-size:12px;color:var(--gray-500)">1 hr ago</div>
+            <div style="font-size:12px;font-weight:600">Team A (3 men)</div>
+            <div><button class="btn btn-success" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();openCaseModal('case2')">Update</button></div>
+          </div>
+          <div class="table-row" onclick="openCaseModal('case3')">
+            <div class="case-id">#WL-045</div>
+            <div><div class="case-loc">Koni Sector B, Lane 4</div><div class="case-sub">Near School Gate</div></div>
+            <div><span class="status-pill status-assigned">Assigned</span></div>
+            <div><span class="priority-dot p-med"></span>Medium</div>
+            <div style="font-size:12px;color:var(--gray-500)">3 hrs ago</div>
+            <div style="font-size:12px;font-weight:600">Team C (2 men)</div>
+            <div><button class="btn btn-secondary" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();openCaseModal('case3')">Details</button></div>
+          </div>
+          <div class="table-row" onclick="openCaseModal('case4')">
+            <div class="case-id">#WL-044</div>
+            <div><div class="case-loc">Gol Bazaar, Main St.</div><div class="case-sub">Near Market Square</div></div>
+            <div><span class="status-pill status-resolved">Resolved</span></div>
+            <div><span class="priority-dot p-med"></span>Medium</div>
+            <div style="font-size:12px;color:var(--gray-500)">5 hrs ago</div>
+            <div style="font-size:12px;font-weight:600">Team B (4 men)</div>
+            <div><button class="btn btn-secondary" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();openCaseModal('case4')">View Log</button></div>
+          </div>
+          <div class="table-row">
+            <div class="case-id">#WL-043</div>
+            <div><div class="case-loc">Sadar Bazar</div><div class="case-sub">Fire hydrant — Lane 7</div></div>
+            <div><span class="status-pill status-assigned">Assigned</span></div>
+            <div><span class="priority-dot p-low"></span>Low</div>
+            <div style="font-size:12px;color:var(--gray-500)">8 hrs ago</div>
+            <div style="font-size:12px;font-weight:600">Team D (2 men)</div>
+            <div><button class="btn btn-secondary" style="font-size:11px;padding:6px 12px" onclick="showToast('📋 Details loaded')">Details</button></div>
+          </div>
+        </div>
 
         <!-- LIVE TEAM TRACKING -->
         <div class="tracking-panel">
@@ -943,6 +994,15 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   <!-- SMART LOGBOOK -->
   <div id="page-logbook" class="page">
     <div class="logbook-container">
+
+      <!-- Access denied for citizens -->
+      <div id="logbook-access-denied" style="display:none">
+        <div class="access-denied">
+          <div class="lock-icon">🔒</div>
+          <h3>Government Officials Only</h3>
+          <p>The Smart Logbook with repair images and detailed data is restricted to verified government officials.</p>
+        </div>
+      </div>
 
       <!-- Official content -->
       <div id="logbook-content" style="display:none">
@@ -1318,46 +1378,6 @@ function applyRoleUI() {
   // Dispatch buttons in alerts page
   applyDispatchRestrictions();
 }
-function renderCases(filter = "all") {
-  const table = document.querySelector(".cases-table");
-  
-  let rows = cases
-    .filter(c => filter === "all" || c.status === filter)
-    .map(c => `
-      <div class="table-row">
-        <div class="case-id">${c.id}</div>
-        <div>
-          <div class="case-loc">${c.location}</div>
-          <div class="case-sub">${c.sub}</div>
-        </div>
-        <div class="status-pill status-${c.status}">${c.status}</div>
-        <div>${c.priority}</div>
-        <div>${c.reported}</div>
-        <div>${c.assigned}</div>
-        <div>
-          <button onclick="assignCase('${c.id}')">Assign</button>
-        </div>
-      </div>
-    `).join("");
-
-  table.innerHTML = `
-    <div class="table-header">
-      <div>ID</div><div>Location</div><div>Status</div>
-      <div>Priority</div><div>Reported</div><div>Assigned</div><div>Action</div>
-    </div>
-    ${rows}
-  `;
-}
-function filterCases(type) {
-  renderCases(type);
-}
-function assignCase(id) {
-  let caseItem = cases.find(c => c.id === id);
-  caseItem.status = "assigned";
-  caseItem.assigned = "Team X";
-
-  renderCases();
-}
 
 function applyDispatchRestrictions() {
   const isOfficial = currentRole === 'official';
@@ -1391,23 +1411,13 @@ function showPage(name) {
   if (tab) tab.classList.add('active');
   window.scrollTo(0, 0);
 }
-function handleTabClick(tab) {
-  // ONLY block authority panel
-  if (tab === 'authority' && userRole !== 'official') {
-    showAccessDenied();
+
+function handleTabClick(page) {
+  if (currentRole !== 'official') {
+    showToast('🔒 This section is for Government Officials only');
     return;
   }
-
-  showPage(tab);
-}
-function renderLogbook() {
-  let data = cases;
-
-  if (userRole === "citizen") {
-    data = cases.filter(c => c.reportedBy === currentUser);
-  }
-
-  // render UI
+  showPage(page);
 }
 
 // ============================================================
@@ -1900,131 +1910,5 @@ async function submitLeak() {
     }
 }
 </script>
-  let cases = [
-  {
-    id: "#WL-047",
-    location: "Torwa Main Road",
-    sub: "Near Water Tank No.3",
-    status: "new",
-    priority: "critical",
-    reported: "2 min ago",
-    assigned: "Unassigned"
-  },
-  {
-    id: "#WL-046",
-    location: "Civil Lines Junction",
-    sub: "Opp. Collector Office",
-    status: "progress",
-    priority: "high",
-    reported: "1 hr ago",
-    assigned: "Team A"
-  },
-  {
-    id: "#WL-045",
-    location: "Koni Sector B",
-    sub: "Near School Gate",
-    status: "assigned",
-    priority: "medium",
-    reported: "3 hrs ago",
-    assigned: "Team C"
-  }
-];
-<script>
-
-let cases = [
-  {
-    id: "#WL-047",
-    location: "Torwa Main Road",
-    sub: "Near Water Tank No.3",
-    status: "new",
-    priority: "Critical",
-    reported: "2 min ago",
-    assigned: "Unassigned"
-  },
-  {
-    id: "#WL-046",
-    location: "Civil Lines Junction",
-    sub: "Opp. Collector Office",
-    status: "progress",
-    priority: "High",
-    reported: "1 hr ago",
-    assigned: "Team A"
-  }
-];
-
-function renderCases(filter = "all") {
-  const table = document.getElementById("casesTable");
-
-  let rows = cases
-    .filter(c => filter === "all" || c.status === filter)
-    .map(c => `
-      <div class="table-row">
-        <div class="case-id">${c.id}</div>
-        <div>
-          <div class="case-loc">${c.location}</div>
-          <div class="case-sub">${c.sub}</div>
-        </div>
-        <div class="status-pill status-${c.status}">${c.status}</div>
-        <div>${c.priority}</div>
-        <div>${c.reported}</div>
-        <div>${c.assigned}</div>
-        <div>
-          <button onclick="assignCase('${c.id}')">Assign</button>
-        </div>
-      </div>
-    `).join("");
-
-  table.innerHTML = `
-    <div class="table-header">
-      <div>ID</div><div>Location</div><div>Status</div>
-      <div>Priority</div><div>Reported</div><div>Assigned</div><div>Action</div>
-    </div>
-    ${rows}
-  `;
-}
-
-function filterCases(type) {
-  renderCases(type);
-}
-
-function assignCase(id) {
-  let c = cases.find(x => x.id === id);
-  c.status = "assigned";
-  c.assigned = "Team X";
-  renderCases();
-}
-
-function exportCSV() {
-  let csv = "ID,Location,Status,Priority,Reported,Assigned\n";
-  cases.forEach(c => {
-    csv += `${c.id},${c.location},${c.status},${c.priority},${c.reported},${c.assigned}\n`;
-  });
-
-  let blob = new Blob([csv], { type: "text/csv" });
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "report.csv";
-  a.click();
-}
-
-// run on load
-renderCases();
-
-</script>
-function exportCSV() {
-  let csv = "ID,Location,Status,Priority,Reported,Assigned\n";
-
-  cases.forEach(c => {
-    csv += `${c.id},${c.location},${c.status},${c.priority},${c.reported},${c.assigned}\n`;
-  });
-
-  let blob = new Blob([csv], { type: "text/csv" });
-  let url = URL.createObjectURL(blob);
-
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = "water_leaks_report.csv";
-  a.click();
-}
 </body>
 </html>
