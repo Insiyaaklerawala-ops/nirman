@@ -680,15 +680,16 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
           </div>
         </div>
         <div class="form-section">
-          <div class="form-section-title">📷 Photo Evidence <span style="font-size:12px;background:var(--red-light);color:var(--red-dark);padding:2px 8px;border-radius:8px;font-weight:600">Required</span></div>
-          <input type="file" id="imageInput" accept="image/*">
-          <div class="form-section-sub">Upload clear photos of the leak. AI will verify authenticity automatically.</div>
-          <div class="upload-zone" onclick="simulateUpload()">
-            <div class="upload-icon">📸</div>
-            <div class="upload-title">Click to upload or drag & drop</div>
+  <div class="form-section-title">
+    📷 Photo Evidence
+  </div>
 
-          <div class="upload-previews" id="upload-previews"></div>
-        </div>
+  <input type="file" id="imageInput" accept="image/*">
+
+  <div class="form-section-sub">
+    Upload clear photos of the leak.
+  </div>
+</div>
         <div class="form-section">
           <div class="form-section-title">🤖 AI Image Verification</div>
           <div class="form-section-sub">Our AI checks for fake or manipulated images to ensure reports are genuine.</div>
@@ -1909,5 +1910,34 @@ async function submitLeak() {
     }
 }
 </script>
+  let cases = [
+  {
+    id: "#WL-047",
+    location: "Torwa Main Road",
+    sub: "Near Water Tank No.3",
+    status: "new",
+    priority: "critical",
+    reported: "2 min ago",
+    assigned: "Unassigned"
+  },
+  {
+    id: "#WL-046",
+    location: "Civil Lines Junction",
+    sub: "Opp. Collector Office",
+    status: "progress",
+    priority: "high",
+    reported: "1 hr ago",
+    assigned: "Team A"
+  },
+  {
+    id: "#WL-045",
+    location: "Koni Sector B",
+    sub: "Near School Gate",
+    status: "assigned",
+    priority: "medium",
+    reported: "3 hrs ago",
+    assigned: "Team C"
+  }
+];
 </body>
 </html>
